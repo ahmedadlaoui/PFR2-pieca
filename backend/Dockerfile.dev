@@ -5,15 +5,12 @@ FROM maven:3.9-eclipse-temurin-17
 
 WORKDIR /app
 
-# Optional: Add a non-root user (good practice even for dev)
-RUN addgroup -S pieca || true && adduser -S pieca -G pieca || true
-# In Alpine 'adduser' works differently sometimes, but since we are using temurin directly which is based on ubuntu/debian, we should use 'useradd' if needed. 
-# Wait, maven:3.9-eclipse-temurin-17 is based on Ubuntu/Debian, not Alpine!
-# We don't need a custom user for local dev as drastically as prod, but we'll stick to running as root to avoid volume permission issues with Maven.
+# Install fswatch or entr to watch for file changes
+RUN apt-get update && apt-get install -y entr wget
 
-# Pre-populate Maven cache for faster subsequent builds
-# This is handled by mounting an anonymous volume to /root/.m2 in docker-compose
+# Copy a small script to watch source files and trigger maven compile
+COPY dev-watch.sh /usr/local/bin/dev-watch
+RUN chmod +x /usr/local/bin/dev-watch
 
-# The default command runs the Spring Boot app natively using Maven
-# It binds to container port 8080 and activates the 'docker' profile
-CMD ["mvn", "spring-boot:run", "-Dspring-boot.run.profiles=docker"]
+# The default command runs our watch script
+CMD ["dev-watch"]
