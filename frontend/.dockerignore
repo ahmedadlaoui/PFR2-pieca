@@ -1,0 +1,37 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+out-tsc/
+
+# Angular cache
+.angular/
+
+# IDE files
+.idea/
+.vscode/
+*.sublime-workspace
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Documentation
+*.md
+
+# Test files
+coverage/
+karma.conf.js
+
+# Docker files
+Dockerfile
+.dockerignore
+docker-compose.yml
+
+# Misc
+.DS_Store
+Thumbs.db
+npm-debug.log
+yarn-error.log

@@ -1,0 +1,7 @@
+# =============================================
+# PFR2-pieca Root .gitignore
+# =============================================
+
+# Environment variables (contains secrets)
+.env
+!.env.example
