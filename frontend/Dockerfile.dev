@@ -12,4 +12,4 @@ RUN npm install -g @angular/cli@20.3.0
 # We run npm install at startup (if needed) and then start the dev server.
 # --host 0.0.0.0 ensures the server is accessible from outside the container
 # --poll 2000 ensures hot-reloading works even if Docker file events are dropped
-CMD npm install && ng serve --host 0.0.0.0 --poll 2000
+CMD npm install && ng serve --host 0.0.0.0 --poll 2000 --proxy-config proxy.conf.json

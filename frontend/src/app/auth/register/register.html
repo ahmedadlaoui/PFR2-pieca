@@ -10,7 +10,8 @@
   
   <div class="absolute inset-0 pattern-dots opacity-5" style="background-image: radial-gradient(#255362 2px, transparent 2px); background-size: 30px 30px;"></div>
 
-  <div class="w-full max-w-4xl relative z-10 flex flex-col items-center">
+  <!-- ═══════ SELECTOR VIEW ═══════ -->
+  <div *ngIf="currentView === 'selector'" class="w-full max-w-4xl relative z-10 flex flex-col items-center">
     <a routerLink="/" class="text-4xl font-black tracking-tighter text-gray-900 mb-10 animate-fade-in">PIÈCA<span class="text-[#d89940]">.</span></a>
     
     <div class="text-center mb-12 animate-fade-in delay-100">
@@ -20,8 +21,7 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-3xl">
       
-      <!-- Buyer Card -->
-      <a href="#" class="bg-white p-10 rounded-md border-2 border-gray-100 hover:border-[#255362] hover:shadow-xl transition-all group flex flex-col items-center text-center cursor-pointer animate-fade-in delay-200">
+      <a routerLink="/register/buyer" class="bg-white p-10 rounded-md border-2 border-gray-100 hover:border-[#255362] hover:shadow-xl transition-all group flex flex-col items-center text-center cursor-pointer animate-fade-in delay-200">
          <div class="w-20 h-20 bg-gray-50 text-gray-400 group-hover:bg-[#255362]/10 group-hover:text-[#255362] rounded-full flex items-center justify-center mb-6 transition-colors">
             <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
          </div>
@@ -33,8 +33,7 @@
          </div>
       </a>
 
-      <!-- Seller Card -->
-      <a href="#" class="bg-white p-10 rounded-md border-2 border-gray-100 hover:border-[#cda977] hover:shadow-xl transition-all group flex flex-col items-center text-center cursor-pointer relative overflow-hidden animate-fade-in delay-300">
+      <a routerLink="/register/seller" class="bg-white p-10 rounded-md border-2 border-gray-100 hover:border-[#cda977] hover:shadow-xl transition-all group flex flex-col items-center text-center cursor-pointer relative overflow-hidden animate-fade-in delay-300">
          <span class="absolute top-4 right-4 bg-gray-900 text-white text-[10px] uppercase font-black px-2 py-1 tracking-widest rounded-sm">Vendeur Actif</span>
          <div class="w-20 h-20 bg-gray-50 text-gray-400 group-hover:bg-[#cda977]/10 group-hover:text-[#cda977] rounded-full flex items-center justify-center mb-6 transition-colors">
             <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
@@ -46,10 +45,138 @@
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
          </div>
       </a>
-
     </div>
 
     <div class="mt-12 text-center text-sm font-medium text-gray-500">
+      Vous avez déjà un compte ? 
+      <a routerLink="/login" class="text-[#255362] font-black hover:underline ml-1">Connectez-vous ici</a>
+    </div>
+  </div>
+
+  <!-- ═══════ BUYER FORM VIEW ═══════ -->
+  <div *ngIf="currentView === 'buyer'" class="w-full max-w-md relative z-10 flex flex-col items-center">
+    <a routerLink="/" class="text-4xl font-black tracking-tighter text-gray-900 mb-10 animate-fade-in">PIÈCA<span class="text-[#d89940]">.</span></a>
+
+    <div class="bg-white w-full p-8 sm:p-12 rounded-md shadow-2xl shadow-gray-200/50 border border-gray-100 animate-fade-in delay-100">
+      <div class="flex items-center gap-3 mb-8">
+        <a routerLink="/register" class="text-gray-400 hover:text-gray-900 transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+        </a>
+        <h2 class="text-2xl font-black text-gray-900 tracking-tight">Inscription Acheteur</h2>
+      </div>
+
+      <!-- Server Error -->
+      <div *ngIf="serverError" class="mb-6 bg-red-50 border border-red-200 text-red-700 text-sm font-medium p-4 rounded-sm animate-fade-in">
+        {{ serverError }}
+      </div>
+      
+      <form [formGroup]="buyerForm" (ngSubmit)="submitBuyer()" class="space-y-5">
+        <div>
+          <label class="block text-xs font-black text-gray-900 mb-2 uppercase tracking-widest">Numéro de téléphone</label>
+          <input formControlName="phoneNumber" type="tel" class="w-full bg-gray-50 border border-gray-200 px-5 py-3 rounded-sm focus:outline-none focus:ring-2 focus:ring-[#255362] transition-colors text-gray-900 font-medium" placeholder="0612345678" />
+          <p *ngIf="buyerForm.get('phoneNumber')?.touched && buyerForm.get('phoneNumber')?.hasError('required')" class="text-red-500 text-xs font-bold mt-1">Numéro obligatoire</p>
+          <p *ngIf="buyerForm.get('phoneNumber')?.touched && buyerForm.get('phoneNumber')?.hasError('pattern')" class="text-red-500 text-xs font-bold mt-1">Format marocain invalide (ex: 0612345678)</p>
+        </div>
+        
+        <div>
+          <label class="block text-xs font-black text-gray-900 mb-2 uppercase tracking-widest">Mot de passe</label>
+          <input formControlName="password" type="password" class="w-full bg-gray-50 border border-gray-200 px-5 py-3 rounded-sm focus:outline-none focus:ring-2 focus:ring-[#255362] transition-colors text-gray-900 font-medium" placeholder="••••••••" />
+          <p *ngIf="buyerForm.get('password')?.touched && buyerForm.get('password')?.hasError('minlength')" class="text-red-500 text-xs font-bold mt-1">Minimum 6 caractères</p>
+        </div>
+
+        <div>
+          <label class="block text-xs font-black text-gray-900 mb-2 uppercase tracking-widest">Confirmer le mot de passe</label>
+          <input formControlName="confirmPassword" type="password" class="w-full bg-gray-50 border border-gray-200 px-5 py-3 rounded-sm focus:outline-none focus:ring-2 focus:ring-[#255362] transition-colors text-gray-900 font-medium" placeholder="••••••••" />
+        </div>
+        
+        <button type="submit" [disabled]="loading" class="w-full bg-gray-900 hover:bg-gray-800 disabled:opacity-50 text-white font-black uppercase tracking-widest text-sm py-4 rounded-sm shadow-md transition-colors mt-2 inline-flex items-center justify-center gap-3 group">
+          <span *ngIf="!loading">Créer mon compte</span>
+          <span *ngIf="loading">Chargement...</span>
+          <svg *ngIf="!loading" class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+        </button>
+      </form>
+    </div>
+
+    <div class="mt-8 text-center text-sm font-medium text-gray-500 animate-fade-in delay-300">
+      Vous avez déjà un compte ? 
+      <a routerLink="/login" class="text-[#255362] font-black hover:underline ml-1">Connectez-vous ici</a>
+    </div>
+  </div>
+
+  <!-- ═══════ SELLER FORM VIEW ═══════ -->
+  <div *ngIf="currentView === 'seller'" class="w-full max-w-lg relative z-10 flex flex-col items-center">
+    <a routerLink="/" class="text-4xl font-black tracking-tighter text-gray-900 mb-10 animate-fade-in">PIÈCA<span class="text-[#d89940]">.</span></a>
+
+    <div class="bg-white w-full p-8 sm:p-12 rounded-md shadow-2xl shadow-gray-200/50 border border-gray-100 animate-fade-in delay-100">
+      <div class="flex items-center gap-3 mb-8">
+        <a routerLink="/register" class="text-gray-400 hover:text-gray-900 transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+        </a>
+        <h2 class="text-2xl font-black text-gray-900 tracking-tight">Inscription Commerçant</h2>
+      </div>
+
+      <!-- Server Error -->
+      <div *ngIf="serverError" class="mb-6 bg-red-50 border border-red-200 text-red-700 text-sm font-medium p-4 rounded-sm animate-fade-in">
+        {{ serverError }}
+      </div>
+      
+      <form [formGroup]="sellerForm" (ngSubmit)="submitSeller()" class="space-y-5">
+        <div>
+          <label class="block text-xs font-black text-gray-900 mb-2 uppercase tracking-widest">Numéro de téléphone</label>
+          <input formControlName="phoneNumber" type="tel" class="w-full bg-gray-50 border border-gray-200 px-5 py-3 rounded-sm focus:outline-none focus:ring-2 focus:ring-[#cda977] transition-colors text-gray-900 font-medium" placeholder="0612345678" />
+          <p *ngIf="sellerForm.get('phoneNumber')?.touched && sellerForm.get('phoneNumber')?.hasError('required')" class="text-red-500 text-xs font-bold mt-1">Numéro obligatoire</p>
+          <p *ngIf="sellerForm.get('phoneNumber')?.touched && sellerForm.get('phoneNumber')?.hasError('pattern')" class="text-red-500 text-xs font-bold mt-1">Format marocain invalide (ex: 0612345678)</p>
+        </div>
+        
+        <div>
+          <label class="block text-xs font-black text-gray-900 mb-2 uppercase tracking-widest">Mot de passe</label>
+          <input formControlName="password" type="password" class="w-full bg-gray-50 border border-gray-200 px-5 py-3 rounded-sm focus:outline-none focus:ring-2 focus:ring-[#cda977] transition-colors text-gray-900 font-medium" placeholder="••••••••" />
+          <p *ngIf="sellerForm.get('password')?.touched && sellerForm.get('password')?.hasError('minlength')" class="text-red-500 text-xs font-bold mt-1">Minimum 6 caractères</p>
+        </div>
+
+        <div>
+          <label class="block text-xs font-black text-gray-900 mb-2 uppercase tracking-widest">Confirmer le mot de passe</label>
+          <input formControlName="confirmPassword" type="password" class="w-full bg-gray-50 border border-gray-200 px-5 py-3 rounded-sm focus:outline-none focus:ring-2 focus:ring-[#cda977] transition-colors text-gray-900 font-medium" placeholder="••••••••" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-black text-gray-900 mb-2 uppercase tracking-widest">Type de commerçant</label>
+          <select formControlName="sellerType" class="w-full bg-gray-50 border border-gray-200 px-5 py-3 rounded-sm focus:outline-none focus:ring-2 focus:ring-[#cda977] transition-colors text-gray-900 font-medium">
+            <option value="" disabled>Sélectionnez votre type</option>
+            <option *ngFor="let type of sellerTypes" [value]="type.value">{{ type.label }}</option>
+          </select>
+          <p *ngIf="sellerForm.get('sellerType')?.touched && sellerForm.get('sellerType')?.hasError('required')" class="text-red-500 text-xs font-bold mt-1">Type obligatoire</p>
+        </div>
+
+        <div>
+          <label class="block text-xs font-black text-gray-900 mb-3 uppercase tracking-widest">Catégories</label>
+          <div class="flex flex-wrap gap-2">
+            <button type="button" (click)="toggleCategory(1)" [class.bg-[#255362]]="isCategorySelected(1)" [class.text-white]="isCategorySelected(1)" class="px-4 py-2 text-xs font-black uppercase tracking-wide border border-gray-200 rounded-sm transition-colors bg-gray-50 text-gray-600 hover:border-[#255362]">
+              Électronique
+            </button>
+            <button type="button" (click)="toggleCategory(2)" [class.bg-[#cda977]]="isCategorySelected(2)" [class.text-white]="isCategorySelected(2)" class="px-4 py-2 text-xs font-black uppercase tracking-wide border border-gray-200 rounded-sm transition-colors bg-gray-50 text-gray-600 hover:border-[#cda977]">
+              Pièces Auto
+            </button>
+            <button type="button" (click)="toggleCategory(3)" [class.bg-[#d89940]]="isCategorySelected(3)" [class.text-white]="isCategorySelected(3)" class="px-4 py-2 text-xs font-black uppercase tracking-wide border border-gray-200 rounded-sm transition-colors bg-gray-50 text-gray-600 hover:border-[#d89940]">
+              Vêtements
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-black text-gray-900 mb-2 uppercase tracking-widest">Note catégorie <span class="text-gray-400 font-medium normal-case">(optionnel)</span></label>
+          <input formControlName="customCategoryNote" type="text" class="w-full bg-gray-50 border border-gray-200 px-5 py-3 rounded-sm focus:outline-none focus:ring-2 focus:ring-[#cda977] transition-colors text-gray-900 font-medium" placeholder="Ex: Spécialisé en pièces BMW" />
+        </div>
+        
+        <button type="submit" [disabled]="loading" class="w-full bg-[#cda977] hover:bg-[#b8935f] disabled:opacity-50 text-white font-black uppercase tracking-widest text-sm py-4 rounded-sm shadow-md transition-colors mt-2 inline-flex items-center justify-center gap-3 group">
+          <span *ngIf="!loading">Rejoindre le réseau</span>
+          <span *ngIf="loading">Chargement...</span>
+          <svg *ngIf="!loading" class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+        </button>
+      </form>
+    </div>
+
+    <div class="mt-8 text-center text-sm font-medium text-gray-500 animate-fade-in delay-300">
       Vous avez déjà un compte ? 
       <a routerLink="/login" class="text-[#255362] font-black hover:underline ml-1">Connectez-vous ici</a>
     </div>

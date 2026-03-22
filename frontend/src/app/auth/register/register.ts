@@ -1,10 +1,134 @@
-import { Component } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { RouterLink, ActivatedRoute, Router } from '@angular/router';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './register.html'
 })
-export class Register {}
+export class Register implements OnInit {
+
+  currentView: 'selector' | 'buyer' | 'seller' = 'selector';
+
+  buyerForm!: FormGroup;
+  sellerForm!: FormGroup;
+
+  serverError = '';
+  loading = false;
+
+  sellerTypes = [
+    { value: 'COMPANY', label: 'Entreprise' },
+    { value: 'LOCAL_STORE', label: 'Magasin local' },
+    { value: 'AUTO_ENTREPRENEUR', label: 'Auto-entrepreneur' },
+    { value: 'CASUAL', label: 'Particulier' }
+  ];
+
+  constructor(
+    private fb: FormBuilder,
+    private route: ActivatedRoute,
+    private router: Router,
+    private authService: AuthService
+  ) {}
+
+  ngOnInit(): void {
+    this.buyerForm = this.fb.group({
+      phoneNumber: ['', [Validators.required, Validators.pattern(/^(\+212|0)[5-7]\d{8}$/)]],
+      password: ['', [Validators.required, Validators.minLength(6)]],
+      confirmPassword: ['', [Validators.required]]
+    });
+
+    this.sellerForm = this.fb.group({
+      phoneNumber: ['', [Validators.required, Validators.pattern(/^(\+212|0)[5-7]\d{8}$/)]],
+      password: ['', [Validators.required, Validators.minLength(6)]],
+      confirmPassword: ['', [Validators.required]],
+      sellerType: ['', [Validators.required]],
+      categoryIds: [[], [Validators.required]],
+      customCategoryNote: ['']
+    });
+
+    this.route.paramMap.subscribe(params => {
+      const role = params.get('role');
+      if (role === 'buyer') {
+        this.currentView = 'buyer';
+      } else if (role === 'seller') {
+        this.currentView = 'seller';
+      } else {
+        this.currentView = 'selector';
+      }
+    });
+  }
+
+  submitBuyer(): void {
+    this.serverError = '';
+
+    if (this.buyerForm.value.password !== this.buyerForm.value.confirmPassword) {
+      this.serverError = 'Les mots de passe ne correspondent pas';
+      return;
+    }
+
+    if (this.buyerForm.invalid) return;
+
+    this.loading = true;
+    this.authService.registerBuyer({
+      phoneNumber: this.buyerForm.value.phoneNumber,
+      password: this.buyerForm.value.password
+    }).subscribe({
+      next: () => {
+        this.loading = false;
+        this.router.navigate(['/']);
+      },
+      error: (err) => {
+        this.loading = false;
+        this.serverError = err.message || 'Une erreur est survenue';
+      }
+    });
+  }
+
+  submitSeller(): void {
+    this.serverError = '';
+
+    if (this.sellerForm.value.password !== this.sellerForm.value.confirmPassword) {
+      this.serverError = 'Les mots de passe ne correspondent pas';
+      return;
+    }
+
+    if (this.sellerForm.invalid) return;
+
+    this.loading = true;
+    this.authService.registerSeller({
+      phoneNumber: this.sellerForm.value.phoneNumber,
+      password: this.sellerForm.value.password,
+      sellerType: this.sellerForm.value.sellerType,
+      categoryIds: this.sellerForm.value.categoryIds,
+      customCategoryNote: this.sellerForm.value.customCategoryNote || undefined
+    }).subscribe({
+      next: () => {
+        this.loading = false;
+        this.router.navigate(['/']);
+      },
+      error: (err) => {
+        this.loading = false;
+        this.serverError = err.message || 'Une erreur est survenue';
+      }
+    });
+  }
+
+  toggleCategory(id: number): void {
+    const current: number[] = this.sellerForm.value.categoryIds || [];
+    const index = current.indexOf(id);
+    if (index > -1) {
+      current.splice(index, 1);
+    } else {
+      current.push(id);
+    }
+    this.sellerForm.patchValue({ categoryIds: [...current] });
+  }
+
+  isCategorySelected(id: number): boolean {
+    return (this.sellerForm.value.categoryIds || []).includes(id);
+  }
+}

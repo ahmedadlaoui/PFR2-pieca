@@ -1,0 +1,14 @@
+package com.pieca.backend.domain.dtos;
+
+import jakarta.validation.constraints.NotBlank;
+import lombok.Data;
+
+@Data
+public class LoginRequest {
+
+    @NotBlank(message = "Le numéro de téléphone est obligatoire")
+    private String phoneNumber;
+
+    @NotBlank(message = "Le mot de passe est obligatoire")
+    private String password;
+}

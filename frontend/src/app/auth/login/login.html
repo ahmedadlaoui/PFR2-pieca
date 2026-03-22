@@ -16,11 +16,18 @@
     <div class="bg-white w-full p-8 sm:p-12 rounded-md shadow-2xl shadow-gray-200/50 border border-gray-100 animate-fade-in delay-100">
       <h2 class="text-3xl font-black text-gray-900 mb-2 tracking-tight text-center">Espace Connexion</h2>
       <p class="text-gray-500 font-medium mb-10 text-sm text-center">Renseignez vos identifiants pour accéder à votre espace pro ou acheteur.</p>
+
+      <!-- Server Error -->
+      <div *ngIf="serverError" class="mb-6 bg-red-50 border border-red-200 text-red-700 text-sm font-medium p-4 rounded-sm animate-fade-in">
+        {{ serverError }}
+      </div>
       
-      <form class="space-y-6">
+      <form [formGroup]="loginForm" (ngSubmit)="submit()" class="space-y-6">
         <div class="animate-fade-in delay-200">
-          <label class="block text-xs font-black text-gray-900 mb-2 uppercase tracking-widest">Adresse email</label>
-          <input type="email" class="w-full bg-gray-50 border border-gray-200 px-5 py-3 rounded-sm focus:outline-none focus:ring-2 focus:ring-[#255362] transition-colors text-gray-900 font-medium" placeholder="exemple@entreprise.com" />
+          <label class="block text-xs font-black text-gray-900 mb-2 uppercase tracking-widest">Numéro de téléphone</label>
+          <input formControlName="phoneNumber" type="tel" class="w-full bg-gray-50 border border-gray-200 px-5 py-3 rounded-sm focus:outline-none focus:ring-2 focus:ring-[#255362] transition-colors text-gray-900 font-medium" placeholder="0612345678" />
+          <p *ngIf="loginForm.get('phoneNumber')?.touched && loginForm.get('phoneNumber')?.hasError('required')" class="text-red-500 text-xs font-bold mt-1">Numéro obligatoire</p>
+          <p *ngIf="loginForm.get('phoneNumber')?.touched && loginForm.get('phoneNumber')?.hasError('pattern')" class="text-red-500 text-xs font-bold mt-1">Format marocain invalide (ex: 0612345678)</p>
         </div>
         
         <div class="animate-fade-in delay-300">
@@ -28,12 +35,14 @@
             <label class="block text-xs font-black text-gray-900 uppercase tracking-widest">Mot de passe</label>
             <a href="#" class="text-[#255362] text-xs font-bold hover:underline">Oublié ?</a>
           </div>
-          <input type="password" class="w-full bg-gray-50 border border-gray-200 px-5 py-3 rounded-sm focus:outline-none focus:ring-2 focus:ring-[#255362] transition-colors text-gray-900 font-medium" placeholder="••••••••" />
+          <input formControlName="password" type="password" class="w-full bg-gray-50 border border-gray-200 px-5 py-3 rounded-sm focus:outline-none focus:ring-2 focus:ring-[#255362] transition-colors text-gray-900 font-medium" placeholder="••••••••" />
+          <p *ngIf="loginForm.get('password')?.touched && loginForm.get('password')?.hasError('required')" class="text-red-500 text-xs font-bold mt-1">Mot de passe obligatoire</p>
         </div>
         
-        <button type="button" class="w-full bg-gray-900 hover:bg-gray-800 text-white font-black uppercase tracking-widest text-sm py-4 rounded-sm shadow-md transition-colors mt-4 inline-flex items-center justify-center gap-3 group animate-fade-in delay-300">
-          S'identifier
-          <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+        <button type="submit" [disabled]="loading" class="w-full bg-gray-900 hover:bg-gray-800 disabled:opacity-50 text-white font-black uppercase tracking-widest text-sm py-4 rounded-sm shadow-md transition-colors mt-4 inline-flex items-center justify-center gap-3 group animate-fade-in delay-300">
+          <span *ngIf="!loading">S'identifier</span>
+          <span *ngIf="loading">Connexion...</span>
+          <svg *ngIf="!loading" class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
         </button>
       </form>
     </div>
