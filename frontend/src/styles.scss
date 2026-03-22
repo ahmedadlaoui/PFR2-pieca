@@ -1,1 +1,10 @@
-/* You can add global styles to this file, and also import other style files */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body {
+  background-color: #FFFFFF; /* Pure white background per guidelines */
+  font-family: 'Aeroport', sans-serif; /* Aeroport typeface enforcement */
+  margin: 0;
+  padding: 0;
+}
