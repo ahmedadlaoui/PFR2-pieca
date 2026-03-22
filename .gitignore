@@ -5,3 +5,5 @@
 # Environment variables (contains secrets)
 .env
 !.env.example
+
+guidelines
