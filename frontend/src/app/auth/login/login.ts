@@ -22,18 +22,21 @@ export class Login {
     private authService: AuthService
   ) {
     this.loginForm = this.fb.group({
-      phoneNumber: ['', [Validators.required, Validators.pattern(/^(\+212|0)[5-7]\d{8}$/)]],
+      email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required]]
     });
   }
 
   submit(): void {
     this.serverError = '';
-    if (this.loginForm.invalid) return;
+    if (this.loginForm.invalid) {
+      this.loginForm.markAllAsTouched();
+      return;
+    }
 
     this.loading = true;
     this.authService.login({
-      phoneNumber: this.loginForm.value.phoneNumber,
+      email: this.loginForm.value.email,
       password: this.loginForm.value.password
     }).subscribe({
       next: () => {

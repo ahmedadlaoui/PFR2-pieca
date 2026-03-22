@@ -7,6 +7,10 @@ import java.time.LocalDateTime;
 @Data
 public class UserDto {
     private Long id;
+    private String email;
+    private String firstName;
+    private String lastName;
+    private String profileImageUrl;
     private String phoneNumber;
     private Role role;
     private LocalDateTime createdAt;

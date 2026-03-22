@@ -36,13 +36,17 @@ export class Register implements OnInit {
 
   ngOnInit(): void {
     this.buyerForm = this.fb.group({
-      phoneNumber: ['', [Validators.required, Validators.pattern(/^(\+212|0)[5-7]\d{8}$/)]],
+      email: ['', [Validators.required, Validators.email]],
+      firstName: ['', [Validators.required]],
+      lastName: ['', [Validators.required]],
       password: ['', [Validators.required, Validators.minLength(6)]],
       confirmPassword: ['', [Validators.required]]
     });
 
     this.sellerForm = this.fb.group({
-      phoneNumber: ['', [Validators.required, Validators.pattern(/^(\+212|0)[5-7]\d{8}$/)]],
+      email: ['', [Validators.required, Validators.email]],
+      firstName: ['', [Validators.required]],
+      lastName: ['', [Validators.required]],
       password: ['', [Validators.required, Validators.minLength(6)]],
       confirmPassword: ['', [Validators.required]],
       sellerType: ['', [Validators.required]],
@@ -70,11 +74,16 @@ export class Register implements OnInit {
       return;
     }
 
-    if (this.buyerForm.invalid) return;
+    if (this.buyerForm.invalid) {
+      this.buyerForm.markAllAsTouched();
+      return;
+    }
 
     this.loading = true;
     this.authService.registerBuyer({
-      phoneNumber: this.buyerForm.value.phoneNumber,
+      email: this.buyerForm.value.email,
+      firstName: this.buyerForm.value.firstName,
+      lastName: this.buyerForm.value.lastName,
       password: this.buyerForm.value.password
     }).subscribe({
       next: () => {
@@ -96,11 +105,16 @@ export class Register implements OnInit {
       return;
     }
 
-    if (this.sellerForm.invalid) return;
+    if (this.sellerForm.invalid) {
+      this.sellerForm.markAllAsTouched();
+      return;
+    }
 
     this.loading = true;
     this.authService.registerSeller({
-      phoneNumber: this.sellerForm.value.phoneNumber,
+      email: this.sellerForm.value.email,
+      firstName: this.sellerForm.value.firstName,
+      lastName: this.sellerForm.value.lastName,
       password: this.sellerForm.value.password,
       sellerType: this.sellerForm.value.sellerType,
       categoryIds: this.sellerForm.value.categoryIds,

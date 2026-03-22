@@ -40,32 +40,30 @@ public class AuthService {
 
     @Transactional
     public AuthResponse registerBuyer(RegisterBuyerRequest request) {
-        ensurePhoneNotTaken(request.getPhoneNumber());
+        ensureEmailNotTaken(request.getEmail());
 
         User user = User.builder()
-                .phoneNumber(request.getPhoneNumber())
+                .email(request.getEmail())
+                .firstName(request.getFirstName())
+                .lastName(request.getLastName())
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .role(Role.BUYER)
                 .build();
 
         userRepository.save(user);
-        log.info("Buyer registered successfully: {}", user.getPhoneNumber());
+        log.info("Buyer registered successfully: {}", user.getEmail());
 
-        String token = jwtService.generateToken(new CustomUserDetails(user));
-
-        return AuthResponse.builder()
-                .token(token)
-                .role(user.getRole())
-                .phoneNumber(user.getPhoneNumber())
-                .build();
+        return buildAuthResponse(user);
     }
 
     @Transactional
     public AuthResponse registerSeller(RegisterSellerRequest request) {
-        ensurePhoneNotTaken(request.getPhoneNumber());
+        ensureEmailNotTaken(request.getEmail());
 
         User user = User.builder()
-                .phoneNumber(request.getPhoneNumber())
+                .email(request.getEmail())
+                .firstName(request.getFirstName())
+                .lastName(request.getLastName())
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .role(Role.SELLER)
                 .build();
@@ -73,7 +71,7 @@ public class AuthService {
         List<Category> categories = request.getCategoryIds().stream()
                 .map(id -> categoryRepository.findById(id)
                         .orElseThrow(() -> {
-                            log.error("Category not found with id: {}", id);
+                            log.error("Catégorie introuvable avec l'id: {}", id);
                             return new ResourceNotFoundException("Catégorie introuvable avec l'id: " + id);
                         }))
                 .toList();
@@ -99,43 +97,93 @@ public class AuthService {
 
         user.setSellerProfile(profileBuilder.build());
         userRepository.save(user);
-        log.info("Seller registered successfully: {}", user.getPhoneNumber());
+        log.info("Seller registered successfully: {}", user.getEmail());
 
-        String token = jwtService.generateToken(new CustomUserDetails(user));
-
-        return AuthResponse.builder()
-                .token(token)
-                .role(user.getRole())
-                .phoneNumber(user.getPhoneNumber())
-                .build();
+        return buildAuthResponse(user);
     }
 
     public AuthResponse login(LoginRequest request) {
-        User user = userRepository.findByPhoneNumber(request.getPhoneNumber())
+        User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> {
-                    log.error("Login failed: no account found for phone {}", request.getPhoneNumber());
-                    return new InvalidCredentialsException("Aucun compte trouvé avec ce numéro de téléphone");
+                    log.error("Login failed: no account found for email {}", request.getEmail());
+                    return new InvalidCredentialsException("Aucun compte trouvé avec cet email");
                 });
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
-            log.error("Login failed: incorrect password for phone {}", request.getPhoneNumber());
+            log.error("Login failed: incorrect password for email {}", request.getEmail());
             throw new InvalidCredentialsException("Mot de passe incorrect");
         }
 
-        String token = jwtService.generateToken(new CustomUserDetails(user));
-        log.info("User logged in successfully: {}", user.getPhoneNumber());
+        log.info("User logged in successfully: {}", user.getEmail());
+        return buildAuthResponse(user);
+    }
+
+    public AuthResponse refreshToken(String refreshToken) {
+        String email = jwtService.extractUsername(refreshToken);
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> {
+                    log.error("Refresh token failed: user not found for email {}", email);
+                    return new InvalidCredentialsException("Token de rafraîchissement invalide");
+                });
+
+        CustomUserDetails userDetails = new CustomUserDetails(user);
+
+        if (!jwtService.isTokenValid(refreshToken, userDetails)) {
+            log.error("Refresh token failed: token expired or invalid for email {}", email);
+            throw new InvalidCredentialsException("Token de rafraîchissement expiré ou invalide");
+        }
+
+        String newAccessToken = jwtService.generateToken(userDetails);
+        log.info("Access token refreshed for: {}", email);
 
         return AuthResponse.builder()
-                .token(token)
+                .accessToken(newAccessToken)
+                .refreshToken(refreshToken)
                 .role(user.getRole())
-                .phoneNumber(user.getPhoneNumber())
+                .email(user.getEmail())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .profileImageUrl(user.getProfileImageUrl())
                 .build();
     }
 
-    private void ensurePhoneNotTaken(String phoneNumber) {
-        if (userRepository.existsByPhoneNumber(phoneNumber)) {
-            log.error("Registration conflict: phone number already in use: {}", phoneNumber);
-            throw new ConflictException("Ce numéro de téléphone est déjà utilisé");
+    public AuthResponse getCurrentUser(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> {
+                    log.error("User not found for /me endpoint: {}", email);
+                    return new ResourceNotFoundException("Utilisateur introuvable");
+                });
+
+        return AuthResponse.builder()
+                .role(user.getRole())
+                .email(user.getEmail())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .profileImageUrl(user.getProfileImageUrl())
+                .build();
+    }
+
+    private AuthResponse buildAuthResponse(User user) {
+        CustomUserDetails userDetails = new CustomUserDetails(user);
+        String accessToken = jwtService.generateToken(userDetails);
+        String refreshToken = jwtService.generateRefreshToken(userDetails);
+
+        return AuthResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .role(user.getRole())
+                .email(user.getEmail())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .profileImageUrl(user.getProfileImageUrl())
+                .build();
+    }
+
+    private void ensureEmailNotTaken(String email) {
+        if (userRepository.existsByEmail(email)) {
+            log.error("Registration conflict: email already in use: {}", email);
+            throw new ConflictException("Cet email est déjà utilisé");
         }
     }
 }

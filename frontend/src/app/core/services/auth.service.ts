@@ -1,20 +1,41 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { BehaviorSubject, Observable, tap } from 'rxjs';
 
 export interface AuthResponse {
-  token: string;
+  accessToken: string;
+  refreshToken: string;
   role: string;
-  phoneNumber: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  profileImageUrl: string | null;
+}
+
+export interface CurrentUser {
+  email: string;
+  role: string;
+  firstName: string;
+  lastName: string;
+  profileImageUrl: string | null;
+}
+
+export interface LoginPayload {
+  email: string;
+  password: string;
 }
 
 export interface RegisterBuyerPayload {
-  phoneNumber: string;
+  email: string;
+  firstName: string;
+  lastName: string;
   password: string;
 }
 
 export interface RegisterSellerPayload {
-  phoneNumber: string;
+  email: string;
+  firstName: string;
+  lastName: string;
   password: string;
   sellerType: string;
   categoryIds: number[];
@@ -24,53 +45,85 @@ export interface RegisterSellerPayload {
   customCategoryNote?: string;
 }
 
-export interface LoginPayload {
-  phoneNumber: string;
-  password: string;
-}
-
 @Injectable({ providedIn: 'root' })
 export class AuthService {
 
   private readonly API = '/api/v1/auth';
 
-  constructor(private http: HttpClient) {}
+  currentUser$ = new BehaviorSubject<CurrentUser | null>(null);
+
+  constructor(private http: HttpClient) {
+    this.loadUserFromStorage();
+  }
 
   login(payload: LoginPayload): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.API}/login`, payload).pipe(
-      tap(res => this.storeToken(res))
+      tap(res => this.handleAuthResponse(res))
     );
   }
 
   registerBuyer(payload: RegisterBuyerPayload): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.API}/register/buyer`, payload).pipe(
-      tap(res => this.storeToken(res))
+      tap(res => this.handleAuthResponse(res))
     );
   }
 
   registerSeller(payload: RegisterSellerPayload): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.API}/register/seller`, payload).pipe(
-      tap(res => this.storeToken(res))
+      tap(res => this.handleAuthResponse(res))
     );
   }
 
-  private storeToken(res: AuthResponse): void {
-    localStorage.setItem('token', res.token);
-    localStorage.setItem('role', res.role);
-    localStorage.setItem('phone', res.phoneNumber);
+  refreshAccessToken(): Observable<AuthResponse> {
+    const refreshToken = localStorage.getItem('refreshToken');
+    return this.http.post<AuthResponse>(`${this.API}/refresh`, { refreshToken }).pipe(
+      tap(res => this.handleAuthResponse(res))
+    );
   }
 
-  getToken(): string | null {
-    return localStorage.getItem('token');
+  getAccessToken(): string | null {
+    return localStorage.getItem('accessToken');
+  }
+
+  getRefreshToken(): string | null {
+    return localStorage.getItem('refreshToken');
   }
 
   isLoggedIn(): boolean {
-    return !!this.getToken();
+    return !!this.getAccessToken();
   }
 
   logout(): void {
-    localStorage.removeItem('token');
-    localStorage.removeItem('role');
-    localStorage.removeItem('phone');
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('currentUser');
+    this.currentUser$.next(null);
+  }
+
+  private handleAuthResponse(res: AuthResponse): void {
+    localStorage.setItem('accessToken', res.accessToken);
+    localStorage.setItem('refreshToken', res.refreshToken);
+
+    const user: CurrentUser = {
+      email: res.email,
+      role: res.role,
+      firstName: res.firstName,
+      lastName: res.lastName,
+      profileImageUrl: res.profileImageUrl
+    };
+
+    localStorage.setItem('currentUser', JSON.stringify(user));
+    this.currentUser$.next(user);
+  }
+
+  private loadUserFromStorage(): void {
+    const stored = localStorage.getItem('currentUser');
+    if (stored) {
+      try {
+        this.currentUser$.next(JSON.parse(stored));
+      } catch {
+        this.logout();
+      }
+    }
   }
 }

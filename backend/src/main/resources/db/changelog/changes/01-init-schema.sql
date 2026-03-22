@@ -5,7 +5,11 @@ CREATE EXTENSION IF NOT EXISTS postgis;
 
 CREATE TABLE users (
     id BIGSERIAL PRIMARY KEY,
-    phone_number VARCHAR(255) NOT NULL UNIQUE,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    phone_number VARCHAR(255),
+    first_name VARCHAR(100),
+    last_name VARCHAR(100),
+    profile_image_url VARCHAR(500),
     password_hash VARCHAR(255) NOT NULL,
     role VARCHAR(50) NOT NULL,
     created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP

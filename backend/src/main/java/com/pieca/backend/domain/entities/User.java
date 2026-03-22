@@ -25,7 +25,19 @@ public class User {
 
     @NotBlank
     @Column(unique = true, nullable = false)
+    private String email;
+
+    @Column
     private String phoneNumber;
+
+    @Column
+    private String firstName;
+
+    @Column
+    private String lastName;
+
+    @Column
+    private String profileImageUrl;
 
     @NotBlank
     @Column(nullable = false)
