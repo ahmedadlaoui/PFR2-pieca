@@ -1,0 +1,57 @@
+<style>
+  @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  .animate-fade-in { opacity: 0; animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+  .delay-100 { animation-delay: 100ms; }
+  .delay-200 { animation-delay: 200ms; }
+  .delay-300 { animation-delay: 300ms; }
+</style>
+
+<div class="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 flex flex-col justify-center items-center relative overflow-hidden">
+  
+  <div class="absolute inset-0 pattern-dots opacity-5" style="background-image: radial-gradient(#255362 2px, transparent 2px); background-size: 30px 30px;"></div>
+
+  <div class="w-full max-w-4xl relative z-10 flex flex-col items-center">
+    <a routerLink="/" class="text-4xl font-black tracking-tighter text-gray-900 mb-10 animate-fade-in">PIÈCA<span class="text-[#d89940]">.</span></a>
+    
+    <div class="text-center mb-12 animate-fade-in delay-100">
+      <h1 class="text-4xl font-black text-gray-900 mb-4 tracking-tight">Rejoignez le réseau PIÈCA</h1>
+      <p class="text-gray-500 font-medium max-w-lg mx-auto">Une seule marketplace pour centraliser toutes vos transactions locales. Choisissez votre profil pour continuer.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-3xl">
+      
+      <!-- Buyer Card -->
+      <a href="#" class="bg-white p-10 rounded-md border-2 border-gray-100 hover:border-[#255362] hover:shadow-xl transition-all group flex flex-col items-center text-center cursor-pointer animate-fade-in delay-200">
+         <div class="w-20 h-20 bg-gray-50 text-gray-400 group-hover:bg-[#255362]/10 group-hover:text-[#255362] rounded-full flex items-center justify-center mb-6 transition-colors">
+            <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+         </div>
+         <h2 class="text-2xl font-black text-gray-900 mb-2">Acheteur</h2>
+         <p class="text-gray-500 font-medium text-sm mb-8">Je cherche des pièces, du matériel ou des vêtements dans ma ville au meilleur prix.</p>
+         <div class="mt-auto w-full group-hover:bg-[#255362] group-hover:text-white bg-gray-100 text-gray-500 py-3 font-black uppercase tracking-widest text-xs rounded-sm transition-colors flex justify-center items-center gap-2">
+            Créer un compte
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+         </div>
+      </a>
+
+      <!-- Seller Card -->
+      <a href="#" class="bg-white p-10 rounded-md border-2 border-gray-100 hover:border-[#cda977] hover:shadow-xl transition-all group flex flex-col items-center text-center cursor-pointer relative overflow-hidden animate-fade-in delay-300">
+         <span class="absolute top-4 right-4 bg-gray-900 text-white text-[10px] uppercase font-black px-2 py-1 tracking-widest rounded-sm">Vendeur Actif</span>
+         <div class="w-20 h-20 bg-gray-50 text-gray-400 group-hover:bg-[#cda977]/10 group-hover:text-[#cda977] rounded-full flex items-center justify-center mb-6 transition-colors">
+            <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+         </div>
+         <h2 class="text-2xl font-black text-gray-900 mb-2">Commerçant</h2>
+         <p class="text-gray-500 font-medium text-sm mb-8">Je suis un professionnel avec un stock et je souhaite recevoir des requêtes locales.</p>
+         <div class="mt-auto w-full group-hover:bg-[#cda977] group-hover:text-white bg-gray-100 text-gray-500 py-3 font-black uppercase tracking-widest text-xs rounded-sm transition-colors flex justify-center items-center gap-2">
+            Rejoindre Réseau
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+         </div>
+      </a>
+
+    </div>
+
+    <div class="mt-12 text-center text-sm font-medium text-gray-500">
+      Vous avez déjà un compte ? 
+      <a routerLink="/login" class="text-[#255362] font-black hover:underline ml-1">Connectez-vous ici</a>
+    </div>
+  </div>
+</div>

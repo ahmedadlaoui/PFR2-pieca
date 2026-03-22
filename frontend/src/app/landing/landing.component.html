@@ -1,0 +1,275 @@
+<style>
+  @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+  .animate-fade-in { opacity: 0; animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+  .delay-100 { animation-delay: 100ms; }
+  .delay-200 { animation-delay: 200ms; }
+  .delay-300 { animation-delay: 300ms; }
+</style>
+
+<div class="min-h-screen bg-white font-sans text-gray-900 selection:bg-gray-900 selection:text-white flex flex-col">
+
+  <!-- Header (Cleaned) -->
+  <header class=" bg-gray-40 w-full bg-white z-50 border-b border-gray-100">
+    <div class="max-w-[1400px] mx-auto px-6 h-20 flex items-center justify-between">
+      <a routerLink="/" class="text-3xl font-black tracking-tighter text-gray-900">PIÈCA<span class="text-gray-400">.</span></a>
+      
+      <div class="flex items-center gap-4">
+        <a routerLink="/login" class="text-sm font-semibold text-gray-500 hover:text-gray-900 transition-colors hidden sm:block">Connexion</a>
+        <a routerLink="/register/buyer" class="bg-gray-900 text-white px-5 py-2.5 text-sm font-bold uppercase tracking-wide rounded-sm hover:bg-white hover:text-gray-900 border border-gray-900 transition-colors shadow-sm">Inscription</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-grow bg-gray-50">
+    <!-- Masonry Grid Hero Section (Wider, Shorter, Layer returned) -->
+    <section class="w-full max-w-[1500px] mx-auto px-4 md:px-8 pt-6 pb-12 animate-fade-in delay-100">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 min-h-[500px] h-auto lg:h-[550px]">
+        
+        <!-- Left Big Block: ÉLECTRONIQUE (Dark Cyan) -->
+        <div class="col-span-1 lg:col-span-7 xl:col-span-8 bg-[#255362] rounded-md relative flex flex-col md:flex-row shadow-sm transition-shadow duration-300 overflow-hidden min-h-[500px]">
+          
+          <!-- Image Layer (Right Side) is naturally at z-0 -->
+          <div class="absolute inset-y-0 right-0 w-full md:w-[60%] pointer-events-none flex items-center justify-end overflow-hidden rounded-r-md">
+            <!-- Restored sizing so electronics are visible, aligned right -->
+            <img src="/images/electronics_hero.png" class="h-full w-full object-cover object-right" alt="Électronique" />
+          </div>
+          
+          <!-- The Fading Layer: Over the image (z-10), under the text -->
+          <div class="absolute inset-0 bg-gradient-to-r from-[#255362] via-[#255362]/90 to-transparent pointer-events-none z-10 w-full md:w-[80%]"></div>
+          
+          <!-- Text Layer (Left Side) is explicitly lifted ON TOP (z-20) -->
+          <div class="w-full md:w-[60%] p-8 md:p-12 flex flex-col justify-center relative z-20">
+             <h2 class="text-white text-4xl md:text-5xl lg:text-6xl font-extrabold mb-4 tracking-tight drop-shadow-md">ÉLECTRONIQUE</h2>
+             <p class="text-cyan-100 text-base md:text-lg mb-8 font-medium leading-relaxed">
+               Trouvez les derniers ordinateurs, smartphones et accessoires de vos boutiques locales.
+             </p>
+             
+             <!-- FIXED INPUT -->
+             <div class="flex items-center bg-white rounded-sm overflow-hidden focus-within:ring-4 focus-within:ring-[#1e414b]/30 transition-all shadow-lg w-full max-w-md">
+                <input type="text" placeholder="Ex: Ordinateur portable..." class="bg-transparent px-5 py-3.5 text-sm w-full outline-none text-gray-900 font-bold placeholder-gray-400" />
+                <button class="bg-[#1e414b] hover:bg-[#163038] transition-colors text-white px-6 py-3.5 flex items-center justify-center font-bold text-sm tracking-wide uppercase">
+                  Rechercher
+                </button>
+             </div>
+          </div>
+        </div>
+        
+        <!-- Right Stack -->
+        <div class="col-span-1 lg:col-span-5 xl:col-span-4 flex flex-col gap-4 h-full">
+           
+           <!-- Top Right: PIÈCES AUTO -->
+           <div class="flex-1 bg-[#cda977] rounded-md relative flex flex-row shadow-sm transition-shadow duration-300 overflow-hidden min-h-[250px]">
+              
+              <!-- Image Layer -->
+              <div class="absolute inset-y-0 right-0 w-[55%] pointer-events-none flex items-center justify-end overflow-hidden">
+                 <!-- Smaller representation scaling -->
+                 <img src="/images/autoparts_hero.png" class="h-[105%] w-auto object-contain translate-x-[10%]" alt="Pièces Auto" />
+              </div>
+              
+              <!-- The Fading Layer -->
+              <div class="absolute inset-0 bg-gradient-to-r from-[#cda977] via-[#cda977]/80 to-transparent pointer-events-none z-10 w-[75%]"></div>
+              
+              <!-- Text Layer -->
+              <div class="w-[50%] p-8 flex flex-col justify-center relative z-20">
+                 <h3 class="text-2xl md:text-3xl font-extrabold text-gray-900 mb-2 leading-tight">PIÈCES - AUTO</h3>
+              </div>
+              
+              <!-- Bottom Left White Button -->
+              <div class="absolute bottom-6 left-6 z-20">
+                 <span class="bg-white text-black px-4 py-2 text-[10px] sm:text-xs font-black uppercase tracking-widest rounded-sm shadow-md inline-block">Composants & Accessoires</span>
+              </div>
+           </div>
+           
+           <!-- Bottom Right: VÊTEMENTS -->
+           <div class="flex-1 bg-[#d89940] rounded-md relative flex flex-row shadow-sm transition-shadow duration-300 overflow-hidden min-h-[250px]">
+              
+            
+              <!-- Image Layer -->
+              <div class="absolute inset-y-0 right-0 w-[55%] pointer-events-none flex items-center justify-end overflow-hidden">
+                 <img src="/images/clothes_hero.png" class="h-[105%] w-auto object-contain translate-x-[10%]" alt="Vêtements" />
+              </div>
+
+              <!-- The Fading Layer -->
+              <div class="absolute inset-0 bg-gradient-to-r from-[#d89940] via-[#d89940]/80 to-transparent pointer-events-none z-10 w-[75%]"></div>
+              
+              <!-- Text Layer -->
+              <div class="w-[50%] p-8 flex flex-col justify-center relative z-20">
+                 <h3 class="text-2xl md:text-3xl font-extrabold text-gray-900 mb-2 leading-tight">VÊTEMENTS</h3>
+              </div>
+              
+              <!-- Bottom Left White Button -->
+              <div class="absolute bottom-6 left-6 z-20">
+                 <span class="bg-white text-black px-4 py-2 text-[10px] sm:text-xs font-black uppercase tracking-widest rounded-sm shadow-md inline-block">Tendances & Mode</span>
+              </div>
+           </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="max-w-[1400px] mx-auto px-6 py-16 border-t border-gray-100">
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-8 text-center divide-x divide-gray-100">
+        <div>
+          <div class="text-4xl md:text-5xl font-black text-gray-900 mb-2">+500</div>
+          <div class="text-gray-500 font-bold text-xs tracking-widest uppercase">Vendeurs Locaux</div>
+        </div>
+        <div>
+          <div class="text-4xl md:text-5xl font-black text-[#255362] mb-2">+12</div>
+          <div class="text-gray-500 font-bold text-xs tracking-widest uppercase">Catégories</div>
+        </div>
+        <div>
+          <div class="text-4xl md:text-5xl font-black text-[#cda977] mb-2">15<span class="text-3xl">min</span></div>
+          <div class="text-gray-500 font-bold text-xs tracking-widest uppercase">Temps de Réponse</div>
+        </div>
+        <div>
+          <div class="text-4xl md:text-5xl font-black text-gray-900 mb-2">100%</div>
+          <div class="text-gray-500 font-bold text-xs tracking-widest uppercase">Transactions Sécurisées</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Categories of Sellers -->
+    <section class="bg-gray-40 py-24 border-y border-gray-100">
+      <div class="max-w-[1400px] mx-auto px-6">
+        <h2 class="text-3xl md:text-4xl font-black text-gray-900 mb-4 text-center tracking-tight">QUI SONT VOS VENDEURS ?</h2>
+        <p class="text-gray-500 font-medium text-center max-w-xl mx-auto mb-14">
+           Une sélection rigoureuse des meilleurs commerçants locaux, prêts à répondre à vos besoins spécifiques.
+        </p>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+           <div class="bg-white p-10 rounded-md shadow-sm border border-gray-100 text-center hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+              <div class="h-16 w-16 bg-[#255362]/10 text-[#255362] flex items-center justify-center rounded-full mx-auto mb-6">
+                 <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+              </div>
+              <h3 class="font-black text-xl text-gray-900 mb-2">Boutiques Tech</h3>
+              <p class="text-sm font-medium text-gray-500">Composants, téléphones, réparation</p>
+           </div>
+           
+           <div class="bg-white p-10 rounded-md shadow-sm border border-gray-100 text-center hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+              <div class="h-16 w-16 bg-[#cda977]/10 text-[#cda977] flex items-center justify-center rounded-full mx-auto mb-6">
+                 <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+              </div>
+              <h3 class="font-black text-xl text-gray-900 mb-2">Garages & Auto</h3>
+              <p class="text-sm font-medium text-gray-500">Pièces de rechange, accessoires auto</p>
+           </div>
+           
+           <div class="bg-white p-10 rounded-md shadow-sm border border-gray-100 text-center hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+              <div class="h-16 w-16 bg-[#d89940]/10 text-[#d89940] flex items-center justify-center rounded-full mx-auto mb-6">
+                 <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+              </div>
+              <h3 class="font-black text-xl text-gray-900 mb-2">Prêt-à-porter</h3>
+              <p class="text-sm font-medium text-gray-500">Vêtements, chaussures, accessoires</p>
+           </div>
+
+           <div class="bg-white p-10 rounded-md shadow-sm border border-gray-100 text-center hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+              <div class="h-16 w-16 bg-gray-900/10 text-gray-900 flex items-center justify-center rounded-full mx-auto mb-6">
+                 <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+              </div>
+              <h3 class="font-black text-xl text-gray-900 mb-2">Grossistes</h3>
+              <p class="text-sm font-medium text-gray-500">Matériaux, B2B, grandes quantités</p>
+           </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- How It Works (Refactored 3-column Layout) -->
+    <section class="max-w-[1400px] mx-auto px-6 py-24 border-t border-gray-100">
+      <div class="text-center mb-20 animate-fade-in">
+        <span class="bg-[#d89940]/10 text-[#d89940] text-xs font-black px-3 py-1 uppercase tracking-widest rounded-sm inline-block mb-4">Le Processus</span>
+        <h2 class="text-4xl md:text-5xl font-black text-gray-900 tracking-tight uppercase">Comment ça marche</h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-12 relative z-10 px-4">
+        <!-- Connecting Line for Desktop -->
+        <div class="hidden md:block absolute top-[48px] left-[15%] right-[15%] h-[2px] bg-gradient-to-r from-gray-100 via-gray-300 to-gray-100 -z-10"></div>
+        
+        <!-- Step 1 -->
+        <div class="flex flex-col items-center text-center animate-fade-in delay-100 bg-white">
+           <div class="w-24 h-24 bg-gray-900 text-white font-black flex items-center justify-center rounded-full text-3xl shadow-xl mb-8 border-8 border-white">1</div>
+           <h3 class="text-2xl font-black text-gray-900 mb-4">Exprimez votre besoin</h3>
+           <p class="text-gray-500 font-medium text-lg leading-relaxed px-4">Décrivez la pièce auto, le smartphone ou le vêtement que vous recherchez en utilisant la barre de recherche intuitive.</p>
+        </div>
+        
+        <!-- Step 2 -->
+        <div class="flex flex-col items-center text-center animate-fade-in delay-200 bg-white">
+           <div class="w-24 h-24 bg-[#255362] text-white font-black flex items-center justify-center rounded-full text-3xl shadow-xl mb-8 border-8 border-white relative">
+              2
+              <div class="absolute inset-0 rounded-full border border-[#255362]/50 animate-ping"></div>
+           </div>
+           <h3 class="text-2xl font-black text-gray-900 mb-4">Notifications radar</h3>
+           <p class="text-gray-500 font-medium text-lg leading-relaxed px-4">Notre système balaie le territoire et alerte de manière ciblée tous les commerçants capables de répondre à votre demande.</p>
+        </div>
+        
+        <!-- Step 3 -->
+        <div class="flex flex-col items-center text-center animate-fade-in delay-300 bg-white">
+           <div class="w-24 h-24 bg-[#d89940] text-white font-black flex items-center justify-center rounded-full text-3xl shadow-xl mb-8 border-8 border-white">3</div>
+           <h3 class="text-2xl font-black text-gray-900 mb-4">La meilleure offre</h3>
+           <p class="text-gray-500 font-medium text-lg leading-relaxed px-4">Les vendeurs vous contactent directement avec des devis et disponibilités immédiates. Il n'y a plus qu'à choisir !</p>
+        </div>
+      </div>
+      
+      <div class="mt-24 text-center animate-fade-in delay-300">
+        <a routerLink="/register/buyer" class="bg-gray-900 hover:bg-gray-800 text-white px-8 py-5 font-black uppercase tracking-wide rounded-sm shadow-xl inline-flex items-center gap-3 transition-colors hover:-translate-y-1 duration-300">
+          Lancer une recherche
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <!-- Clean Footer -->
+  <footer class="bg-gray-900 text-white pt-20 pb-10 border-t border-gray-800 mt-auto">
+    <div class="max-w-[1400px] mx-auto px-6">
+       <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
+          <div class="col-span-1 md:col-span-1">
+             <a routerLink="/" class="text-3xl font-black tracking-tighter text-white block mb-4">PIÈCA<span class="text-[#d89940]">.</span></a>
+             <p class="text-gray-400 font-medium text-sm leading-relaxed mb-6">
+               La plateforme B2B et B2C connectant instantanément vos demandes aux stocks des commerçants de votre ville.
+             </p>
+          </div>
+          
+          <div class="col-span-1">
+             <h4 class="font-black text-lg mb-6 tracking-wide">PLATEFORME</h4>
+             <ul class="space-y-4">
+                <li><a href="#" class="text-gray-400 hover:text-white font-medium text-sm transition-colors">Accueil</a></li>
+                <li><a href="#" class="text-gray-400 hover:text-white font-medium text-sm transition-colors">Comment ça marche</a></li>
+                <li><a href="#" class="text-gray-400 hover:text-white font-medium text-sm transition-colors">Catégories</a></li>
+             </ul>
+          </div>
+          
+          <div class="col-span-1">
+             <h4 class="font-black text-lg mb-6 tracking-wide">VENDEURS</h4>
+             <ul class="space-y-4">
+                <li><a href="/register/seller" class="text-gray-400 hover:text-white font-medium text-sm transition-colors">Devenir vendeur</a></li>
+                <li><a href="/login" class="text-gray-400 hover:text-white font-medium text-sm transition-colors">Espace Pro</a></li>
+                <li><a href="#" class="text-gray-400 hover:text-white font-medium text-sm transition-colors">Tarifs</a></li>
+             </ul>
+          </div>
+          
+          <div class="col-span-1">
+             <h4 class="font-black text-lg mb-6 tracking-wide">LEGAL</h4>
+             <ul class="space-y-4">
+                <li><a href="#" class="text-gray-400 hover:text-white font-medium text-sm transition-colors">Mentions légales</a></li>
+                <li><a href="#" class="text-gray-400 hover:text-white font-medium text-sm transition-colors">Confidentialité</a></li>
+                <li><a href="#" class="text-gray-400 hover:text-white font-medium text-sm transition-colors">CGU</a></li>
+             </ul>
+          </div>
+       </div>
+       
+       <div class="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+          <p class="text-gray-500 font-medium text-sm">© 2026 PIÈCA. Tous droits réservés.</p>
+          <div class="flex gap-4">
+             <!-- Social Icons -->
+             <a href="#" class="w-10 h-10 bg-gray-800 rounded-sm flex items-center justify-center text-gray-400 hover:bg-white hover:text-gray-900 transition-colors">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/></svg>
+             </a>
+             <a href="#" class="w-10 h-10 bg-gray-800 rounded-sm flex items-center justify-center text-gray-400 hover:bg-[#255362] hover:text-white transition-colors">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+             </a>
+          </div>
+       </div>
+    </div>
+  </footer>
+
+</div>
