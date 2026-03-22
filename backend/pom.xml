@@ -49,6 +49,12 @@
 			<scope>runtime</scope>
 		</dependency>
 
+		<!-- Liquibase -->
+		<dependency>
+			<groupId>org.liquibase</groupId>
+			<artifactId>liquibase-core</artifactId>
+		</dependency>
+
 		<!-- Actuator (Health checks for Docker) -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
