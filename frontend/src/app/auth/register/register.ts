@@ -254,7 +254,7 @@ export class Register implements OnInit, AfterViewInit, OnDestroy {
     }).subscribe({
       next: () => {
         this.loading = false;
-        this.router.navigate(['/']);
+        this.router.navigate(['/buyer/dashboard']);
       },
       error: (err) => {
         this.loading = false;
@@ -286,7 +286,7 @@ export class Register implements OnInit, AfterViewInit, OnDestroy {
     }).subscribe({
       next: () => {
         this.loading = false;
-        this.router.navigate(['/']);
+        this.router.navigate(['/seller/dashboard']);
       },
       error: (err) => {
         this.loading = false;

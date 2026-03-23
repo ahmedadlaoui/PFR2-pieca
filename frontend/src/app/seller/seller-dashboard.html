@@ -1,0 +1,62 @@
+<style>
+  @keyframes riseIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .rise-in {
+    opacity: 0;
+    animation: riseIn 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .rise-in.delay-120 { animation-delay: 120ms; }
+  .rise-in.delay-220 { animation-delay: 220ms; }
+</style>
+
+<div class="min-h-screen bg-[#f8fafc] py-10 px-4 sm:px-6">
+  <div class="max-w-6xl mx-auto">
+    <div class="rise-in bg-white border border-gray-100 rounded-xl p-6 sm:p-8 shadow-lg shadow-gray-200/50 flex items-center justify-between gap-4">
+      <div>
+        <p class="text-[11px] uppercase tracking-[0.2em] font-black text-[#d89940]">Seller dashboard</p>
+        <h1 class="text-2xl sm:text-3xl font-black text-gray-900 mt-1">Business overview</h1>
+        <p class="text-sm text-gray-500 mt-2 font-medium">Monitor incoming buyer demands and response performance.</p>
+      </div>
+      <a routerLink="/demand/new" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-sm bg-gray-900 text-white text-xs font-black uppercase tracking-widest hover:bg-[#2f2f2f] transition-colors">
+        Open demand board
+      </a>
+    </div>
+
+    <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 rise-in delay-120">
+      <div class="bg-white border border-gray-100 rounded-xl p-5 shadow-sm">
+        <p class="text-xs font-black uppercase tracking-widest text-gray-500">Nearby demands</p>
+        <p class="text-3xl font-black text-gray-900 mt-2">34</p>
+        <p class="text-sm text-emerald-600 font-bold mt-2">+8 in 24h</p>
+      </div>
+      <div class="bg-white border border-gray-100 rounded-xl p-5 shadow-sm">
+        <p class="text-xs font-black uppercase tracking-widest text-gray-500">Offers sent</p>
+        <p class="text-3xl font-black text-gray-900 mt-2">22</p>
+        <p class="text-sm text-[#255362] font-bold mt-2">65% conversion</p>
+      </div>
+      <div class="bg-white border border-gray-100 rounded-xl p-5 shadow-sm">
+        <p class="text-xs font-black uppercase tracking-widest text-gray-500">Avg response time</p>
+        <p class="text-3xl font-black text-gray-900 mt-2">12m</p>
+        <p class="text-sm text-gray-500 font-bold mt-2">Target: under 15m</p>
+      </div>
+    </div>
+
+    <div class="mt-6 bg-white border border-gray-100 rounded-xl p-6 shadow-sm rise-in delay-220">
+      <h2 class="text-lg font-black text-gray-900">Pipeline snapshot</h2>
+      <div class="mt-4 space-y-3">
+        <div class="p-4 rounded-md bg-gray-50 border border-gray-100">
+          <p class="text-sm font-semibold text-gray-800">7 demands waiting for initial quote.</p>
+        </div>
+        <div class="p-4 rounded-md bg-gray-50 border border-gray-100">
+          <p class="text-sm font-semibold text-gray-800">5 offers awaiting buyer confirmation.</p>
+        </div>
+        <div class="p-4 rounded-md bg-gray-50 border border-gray-100">
+          <p class="text-sm font-semibold text-gray-800">3 deliveries scheduled for today.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

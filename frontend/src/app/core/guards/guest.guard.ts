@@ -9,6 +9,10 @@ export const guestGuard: CanActivateFn = (route, state) => {
   if (!authService.isLoggedIn()) {
     return true;
   }
-  
-  return router.parseUrl('/');
+
+  if (authService.currentUser$.value?.role === 'SELLER') {
+    return router.parseUrl('/seller/dashboard');
+  }
+
+  return router.parseUrl('/buyer/dashboard');
 };

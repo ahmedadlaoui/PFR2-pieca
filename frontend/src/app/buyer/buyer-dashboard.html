@@ -1,0 +1,62 @@
+<style>
+  @keyframes riseIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .rise-in {
+    opacity: 0;
+    animation: riseIn 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .rise-in.delay-120 { animation-delay: 120ms; }
+  .rise-in.delay-220 { animation-delay: 220ms; }
+</style>
+
+<div class="min-h-screen bg-[#f8fafc] py-10 px-4 sm:px-6">
+  <div class="max-w-6xl mx-auto">
+    <div class="rise-in bg-white border border-gray-100 rounded-xl p-6 sm:p-8 shadow-lg shadow-gray-200/50 flex items-center justify-between gap-4">
+      <div>
+        <p class="text-[11px] uppercase tracking-[0.2em] font-black text-[#255362]">Buyer dashboard</p>
+        <h1 class="text-2xl sm:text-3xl font-black text-gray-900 mt-1">Welcome back</h1>
+        <p class="text-sm text-gray-500 mt-2 font-medium">Track your requests, offers, and favorite sellers in one place.</p>
+      </div>
+      <a routerLink="/demand/new" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-sm bg-[#255362] text-white text-xs font-black uppercase tracking-widest hover:bg-[#1d4450] transition-colors">
+        New demand
+      </a>
+    </div>
+
+    <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 rise-in delay-120">
+      <div class="bg-white border border-gray-100 rounded-xl p-5 shadow-sm">
+        <p class="text-xs font-black uppercase tracking-widest text-gray-500">Active demands</p>
+        <p class="text-3xl font-black text-gray-900 mt-2">7</p>
+        <p class="text-sm text-emerald-600 font-bold mt-2">+2 this week</p>
+      </div>
+      <div class="bg-white border border-gray-100 rounded-xl p-5 shadow-sm">
+        <p class="text-xs font-black uppercase tracking-widest text-gray-500">Received offers</p>
+        <p class="text-3xl font-black text-gray-900 mt-2">19</p>
+        <p class="text-sm text-[#255362] font-bold mt-2">4 pending review</p>
+      </div>
+      <div class="bg-white border border-gray-100 rounded-xl p-5 shadow-sm">
+        <p class="text-xs font-black uppercase tracking-widest text-gray-500">Saved sellers</p>
+        <p class="text-3xl font-black text-gray-900 mt-2">12</p>
+        <p class="text-sm text-gray-500 font-bold mt-2">Across 5 cities</p>
+      </div>
+    </div>
+
+    <div class="mt-6 bg-white border border-gray-100 rounded-xl p-6 shadow-sm rise-in delay-220">
+      <h2 class="text-lg font-black text-gray-900">Recent activity</h2>
+      <div class="mt-4 space-y-3">
+        <div class="p-4 rounded-md bg-gray-50 border border-gray-100">
+          <p class="text-sm font-semibold text-gray-800">Demand "Alternateur Clio 4" matched with 3 nearby sellers.</p>
+        </div>
+        <div class="p-4 rounded-md bg-gray-50 border border-gray-100">
+          <p class="text-sm font-semibold text-gray-800">New offer received from AutoPro Casablanca.</p>
+        </div>
+        <div class="p-4 rounded-md bg-gray-50 border border-gray-100">
+          <p class="text-sm font-semibold text-gray-800">You bookmarked Seller "Tech Medina".</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

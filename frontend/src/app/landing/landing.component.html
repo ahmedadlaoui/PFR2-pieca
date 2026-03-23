@@ -3,18 +3,15 @@
     from { opacity: 0; transform: translateY(30px); }
     to { opacity: 1; transform: translateY(0); }
   }
-  @keyframes slideDown {
-    from { opacity: 0; transform: translateY(-20px) scaleY(0.95); }
-    to { opacity: 1; transform: translateY(0) scaleY(1); }
+  @keyframes floatSoft {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-6px); }
   }
   .animate-fade-in { opacity: 0; animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
   .delay-100 { animation-delay: 100ms; }
   .delay-200 { animation-delay: 200ms; }
   .delay-300 { animation-delay: 300ms; }
-  .animate-slide-down { 
-    animation: slideDown 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
-    transform-origin: top;
-  }
+  .animate-float-soft { animation: floatSoft 5s ease-in-out infinite; }
 </style>
 
 <div class="min-h-screen bg-[#f9f9fd] font-sans text-gray-900 selection:bg-gray-900 selection:text-white flex flex-col">
@@ -32,16 +29,8 @@
         <a href="#categories" class="text-sm font-semibold text-gray-500 hover:text-gray-900 transition-colors">Catégories</a>
         <a href="#how-it-works" class="text-sm font-semibold text-gray-500 hover:text-gray-900 transition-colors">Comment ça marche</a>
         <a routerLink="/register/seller" class="text-sm font-semibold text-gray-500 hover:text-gray-900 transition-colors">Devenir vendeur</a>
+        <a href="#" (click)="goToDemandPage($event)" class="text-sm font-semibold text-gray-500 hover:text-gray-900 transition-colors">Nouvelle demande +</a>
       </nav>
-
-      <!-- Search trigger pill -->
-      <button (click)="openSearch()"
-        class="hidden md:flex items-center gap-3 bg-gray-100 hover:bg-gray-200 transition-colors rounded-full px-4 py-2.5 text-sm text-gray-400 font-medium cursor-pointer flex-1 max-w-xs">
-        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-        </svg>
-        Rechercher...
-      </button>
 
       <!-- Auth / Profile -->
       <div class="flex items-center gap-3 shrink-0">
@@ -75,7 +64,7 @@
                 <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                 Mon Profil
               </a>
-              <a href="#" class="flex items-center gap-3 px-5 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors" (click)="closeDropdown()">
+              <a href="#" class="flex items-center gap-3 px-5 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors" (click)="goToDashboard($event)">
                 <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
                 Dashboard
               </a>
@@ -91,107 +80,7 @@
       </div>
     </div>
 
-    <!-- ====== SEARCH DROPDOWN PANEL (part of header) ====== -->
-    <div *ngIf="isSearchOpen" class="absolute top-full left-0 w-full bg-white border-t border-gray-100 shadow-2xl z-50 animate-slide-down">
-      <div class="max-w-[1400px] mx-auto px-6 py-6">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-
-          <!-- What are you looking for -->
-          <div class="md:col-span-2 flex flex-col gap-1.5">
-            <label class="text-xs font-black uppercase tracking-widest text-gray-500">Que recherchez-vous ?</label>
-            <div class="relative">
-              <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-              </svg>
-              <input type="text" placeholder="Ex: iPhone 14, pièce moteur, robe de soirée..." autofocus
-                class="w-full pl-12 pr-4 py-3.5 rounded-md border border-gray-200 focus:border-[#255362] focus:ring-2 focus:ring-[#255362]/20 outline-none text-sm font-semibold text-gray-900 placeholder-gray-400 bg-gray-50 transition-all"/>
-            </div>
-          </div>
-
-          <!-- Position -->
-          <div class="flex flex-col gap-1.5 font-bold">
-            <label class="text-xs font-black uppercase tracking-widest text-gray-500">Ville / Position</label>
-            <div class="relative group">
-              <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-              </svg>
-              <input type="text" [(ngModel)]="searchLocation" [placeholder]="detectingLocation ? 'Localisation...' : 'Ex: Casablanca, Rabat...'"
-                class="w-full pl-12 pr-12 py-3.5 rounded-md border border-gray-200 focus:border-[#255362] focus:ring-2 focus:ring-[#255362]/20 outline-none text-sm font-semibold text-gray-900 placeholder-gray-400 bg-gray-50 transition-all"/>
-              
-              <!-- Detect Location Button -->
-              <button (click)="detectLocation()" title="Ma position actuelle"
-                class="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-full hover:bg-gray-200 text-gray-400 hover:text-[#255362] transition-colors">
-                <svg *ngIf="!detectingLocation" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                </svg>
-                <svg *ngIf="detectingLocation" class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                </svg>
-              </button>
-            </div>
-          </div>
-
-          <!-- Category -->
-          <div class="flex flex-col gap-1.5">
-            <label class="text-xs font-black uppercase tracking-widest text-gray-500">Catégorie</label>
-            <select class="w-full px-4 py-3.5 rounded-md border border-gray-200 focus:border-[#255362] focus:ring-2 focus:ring-[#255362]/20 outline-none text-sm font-semibold text-gray-900 bg-gray-50 cursor-pointer transition-all appearance-none">
-              <option value="">Toutes les catégories</option>
-              <option value="electronique">Électronique & High-Tech</option>
-              <option value="auto">Pièces Auto & Moto</option>
-              <option value="vetements">Vêtements & Mode</option>
-              <option value="electromenager">Électroménager</option>
-              <option value="mobilier">Mobilier & Décoration</option>
-              <option value="autre">Autre</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Rayon + Search button row -->
-        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-6 mt-6 pt-4 border-t border-gray-100">
-          <div class="flex flex-col gap-2 w-full sm:w-auto">
-            <label class="text-xs font-black uppercase tracking-widest text-gray-500">Rayon de recherche (km)</label>
-            <div class="flex flex-wrap items-center gap-2">
-              <button (click)="setRayon(5)" 
-                [class]="rayon === 5 ? 'bg-[#255362] text-white border-[#255362]' : 'bg-white text-gray-600 border-gray-200 hover:border-[#255362]'"
-                class="px-4 py-1.5 rounded-full text-xs font-black border transition-all">5 km</button>
-              <button (click)="setRayon(10)" 
-                [class]="rayon === 10 ? 'bg-[#255362] text-white border-[#255362]' : 'bg-white text-gray-600 border-gray-200 hover:border-[#255362]'"
-                class="px-4 py-1.5 rounded-full text-xs font-black border transition-all">10 km</button>
-              <button (click)="setRayon(25)" 
-                [class]="rayon === 25 ? 'bg-[#255362] text-white border-[#255362]' : 'bg-white text-gray-600 border-gray-200 hover:border-[#255362]'"
-                class="px-4 py-1.5 rounded-full text-xs font-black border transition-all">25 km</button>
-              <button (click)="setRayon(50)" 
-                [class]="rayon === 50 ? 'bg-[#255362] text-white border-[#255362]' : 'bg-white text-gray-600 border-gray-200 hover:border-[#255362]'"
-                class="px-4 py-1.5 rounded-full text-xs font-black border transition-all">50 km</button>
-              
-              <div class="flex items-center gap-2 ml-2 pl-4 border-l border-gray-100">
-                <span class="text-xs font-bold text-gray-400">Personnalisé :</span>
-                <div class="relative w-20">
-                  <input type="number" [(ngModel)]="rayon" min="1" max="1000"
-                    class="w-full px-3 py-1.5 rounded-md border border-gray-200 focus:border-[#255362] outline-none text-xs font-black text-gray-900 bg-gray-50"/>
-                  <span class="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-bold text-gray-400 pointer-events-none">km</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="flex items-center gap-3 ml-auto shrink-0">
-            <button (click)="closeSearch()" class="text-sm font-semibold text-gray-400 hover:text-gray-700 transition-colors px-4 py-2.5">Annuler</button>
-            <button class="bg-gray-900 hover:bg-[#255362] transition-colors text-white px-8 py-3 rounded-sm font-black uppercase tracking-wide text-sm shadow-md flex items-center gap-2">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-              Rechercher
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
   </header>
-
-  <!-- Blur overlay when search is open (Fixed inset-0 to cover screen) -->
-  <div *ngIf="isSearchOpen" (click)="closeSearch()"
-    class="fixed inset-0 bg-black/50 backdrop-blur-xl z-40 cursor-pointer"
-    style="pointer-events: all;">
-  </div>
 
   <!-- ===================== MAIN ===================== -->
   <main class="flex-grow relative z-10">
@@ -215,10 +104,10 @@
               Trouvez les derniers ordinateurs, smartphones et accessoires de vos boutiques locales.
             </p>
             <div>
-              <button (click)="openSearch()"
-                class="bg-white text-[#255362] hover:bg-[#f0f9fc] transition-colors px-8 py-3.5 rounded-sm font-black text-sm uppercase tracking-widest shadow-lg flex items-center gap-2 inline-flex">
+              <button (click)="goToDemandPage($event)"
+                class="bg-white text-[#255362] hover:bg-[#f0f9fc] hover:-translate-y-0.5 transition-all duration-300 px-8 py-3.5 rounded-sm font-black text-sm uppercase tracking-widest shadow-lg flex items-center gap-2 inline-flex animate-float-soft">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                Rechercher
+                Creer une demande
               </button>
             </div>
           </div>
@@ -327,8 +216,8 @@
         </div>
       </div>
       <div class="mt-24 text-center animate-fade-in delay-300">
-        <button (click)="openSearch()" class="bg-gray-900 hover:bg-gray-800 text-white px-8 py-5 font-black uppercase tracking-wide rounded-sm shadow-xl inline-flex items-center gap-3 transition-colors hover:-translate-y-1 duration-300">
-          Lancer une recherche
+        <button (click)="goToDemandPage($event)" class="bg-gray-900 hover:bg-gray-800 text-white px-8 py-5 font-black uppercase tracking-wide rounded-sm shadow-xl inline-flex items-center gap-3 transition-colors hover:-translate-y-1 duration-300">
+          Creer une demande
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
         </button>
       </div>

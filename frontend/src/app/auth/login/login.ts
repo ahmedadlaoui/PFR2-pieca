@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { RouterLink, Router } from '@angular/router';
+import { RouterLink, Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 
 @Component({
@@ -19,6 +19,7 @@ export class Login {
   constructor(
     private fb: FormBuilder,
     private router: Router,
+    private route: ActivatedRoute,
     private authService: AuthService
   ) {
     this.loginForm = this.fb.group({
@@ -41,7 +42,19 @@ export class Login {
     }).subscribe({
       next: () => {
         this.loading = false;
-        this.router.navigate(['/']);
+        const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+        if (returnUrl) {
+          this.router.navigateByUrl(returnUrl);
+          return;
+        }
+
+        const role = this.authService.currentUser$.value?.role;
+        if (role === 'SELLER') {
+          this.router.navigate(['/seller/dashboard']);
+          return;
+        }
+
+        this.router.navigate(['/buyer/dashboard']);
       },
       error: (err) => {
         this.loading = false;

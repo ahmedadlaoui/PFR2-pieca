@@ -1,24 +1,19 @@
 import { Component, OnInit, OnDestroy, Renderer2, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
-import { FormsModule } from '@angular/forms';
 import { AuthService, CurrentUser } from '../core/services/auth.service';
 import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-landing',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './landing.component.html'
 })
 export class LandingPageComponent implements OnInit, OnDestroy {
 
   currentUser: CurrentUser | null = null;
   dropdownOpen = false;
-  isSearchOpen = false;
-  rayon = 10;
-  searchLocation = '';
-  detectingLocation = false;
 
   private userSub!: Subscription;
   private renderer = inject(Renderer2);
@@ -39,29 +34,6 @@ export class LandingPageComponent implements OnInit, OnDestroy {
     this.renderer.removeClass(document.body, 'overflow-hidden');
   }
 
-  detectLocation(): void {
-    if (!navigator.geolocation) {
-      alert('La géolocalisation n\'est pas supportée par votre navigateur.');
-      return;
-    }
-
-    this.detectingLocation = true;
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        this.detectingLocation = false;
-        const lat = position.coords.latitude.toFixed(6);
-        const lon = position.coords.longitude.toFixed(6);
-        this.searchLocation = `${lat}, ${lon}`;
-      },
-      (error) => {
-        this.detectingLocation = false;
-        console.error('Error detecting location:', error);
-        alert('Impossible de détecter votre position. Veuillez l\'entrer manuellement.');
-      },
-      { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
-    );
-  }
-
   toggleDropdown(): void {
     this.dropdownOpen = !this.dropdownOpen;
   }
@@ -70,19 +42,32 @@ export class LandingPageComponent implements OnInit, OnDestroy {
     this.dropdownOpen = false;
   }
 
-  openSearch(): void {
-    this.isSearchOpen = true;
-    this.dropdownOpen = false; // Close auth dropdown if open
-    this.renderer.addClass(document.body, 'overflow-hidden');
+  goToDemandPage(event?: Event): void {
+    event?.preventDefault();
+
+    if (!this.authService.isLoggedIn()) {
+      this.router.navigate(['/login'], { queryParams: { returnUrl: '/demand/new' } });
+      return;
+    }
+
+    this.router.navigate(['/demand/new']);
   }
 
-  closeSearch(): void {
-    this.isSearchOpen = false;
-    this.renderer.removeClass(document.body, 'overflow-hidden');
-  }
+  goToDashboard(event?: Event): void {
+    event?.preventDefault();
+    this.closeDropdown();
 
-  setRayon(value: number): void {
-    this.rayon = value;
+    if (!this.authService.isLoggedIn()) {
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    if (this.currentUser?.role === 'SELLER') {
+      this.router.navigate(['/seller/dashboard']);
+      return;
+    }
+
+    this.router.navigate(['/buyer/dashboard']);
   }
 
   logout(): void {
