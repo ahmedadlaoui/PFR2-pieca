@@ -64,8 +64,15 @@
             </td>
             <td class="px-4 md:px-6 py-3.5 text-sm font-semibold text-gray-700">{{ demand.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
             <td class="px-4 md:px-6 py-3.5 text-sm">
-              <a *ngIf="demand.imageUrl" [href]="demand.imageUrl" target="_blank" class="text-[#255362] font-bold hover:underline" (click)="$event.stopPropagation()">Voir</a>
-              <span *ngIf="!demand.imageUrl" class="text-gray-300 font-semibold">-</span>
+              <a *ngIf="demand.imageUrl" [href]="demand.imageUrl" target="_blank" title="Voir l'image" (click)="$event.stopPropagation()" class="inline-flex items-center">
+                <img
+                  [src]="demand.imageUrl"
+                  alt="Photo demande"
+                  class="w-14 h-14 rounded-md object-cover border border-gray-200 shadow-sm"
+                  (error)="$any($event.target).style.display='none'; $any($event.target.nextElementSibling).style.display='flex'" />
+                <span class="hidden w-14 h-14 rounded-md border border-gray-200 bg-gray-50 text-[10px] font-bold text-gray-400 items-center justify-center uppercase">Aucune</span>
+              </a>
+              <span *ngIf="!demand.imageUrl" class="inline-flex w-14 h-14 rounded-md border border-gray-200 bg-gray-50 text-[10px] font-bold text-gray-400 items-center justify-center uppercase">Aucune</span>
             </td>
           </tr>
           <tr *ngIf="demands.length === 0">
