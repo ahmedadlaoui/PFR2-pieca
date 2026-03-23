@@ -166,7 +166,15 @@ public class AuthService {
 
     private AuthResponse buildAuthResponse(User user) {
         CustomUserDetails userDetails = new CustomUserDetails(user);
-        String accessToken = jwtService.generateToken(userDetails);
+        
+        java.util.Map<String, Object> extraClaims = new java.util.HashMap<>();
+        extraClaims.put("role", user.getRole().name());
+        extraClaims.put("email", user.getEmail());
+        extraClaims.put("firstName", user.getFirstName());
+        extraClaims.put("lastName", user.getLastName());
+        extraClaims.put("profileImageUrl", user.getProfileImageUrl());
+        
+        String accessToken = jwtService.generateToken(extraClaims, userDetails);
         String refreshToken = jwtService.generateRefreshToken(userDetails);
 
         return AuthResponse.builder()

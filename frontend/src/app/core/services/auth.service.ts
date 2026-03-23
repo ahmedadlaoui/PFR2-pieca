@@ -4,7 +4,6 @@ import { BehaviorSubject, Observable, tap } from 'rxjs';
 
 export interface AuthResponse {
   accessToken: string;
-  refreshToken: string;
   role: string;
   email: string;
   firstName: string;
@@ -57,26 +56,26 @@ export class AuthService {
   }
 
   login(payload: LoginPayload): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.API}/login`, payload).pipe(
+    return this.http.post<AuthResponse>(`${this.API}/login`, payload, { withCredentials: true }).pipe(
       tap(res => this.handleAuthResponse(res))
     );
   }
 
   registerBuyer(payload: RegisterBuyerPayload): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.API}/register/buyer`, payload).pipe(
+    return this.http.post<AuthResponse>(`${this.API}/register/buyer`, payload, { withCredentials: true }).pipe(
       tap(res => this.handleAuthResponse(res))
     );
   }
 
   registerSeller(payload: RegisterSellerPayload): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.API}/register/seller`, payload).pipe(
+    return this.http.post<AuthResponse>(`${this.API}/register/seller`, payload, { withCredentials: true }).pipe(
       tap(res => this.handleAuthResponse(res))
     );
   }
 
   refreshAccessToken(): Observable<AuthResponse> {
-    const refreshToken = localStorage.getItem('refreshToken');
-    return this.http.post<AuthResponse>(`${this.API}/refresh`, { refreshToken }).pipe(
+    // Relying on the HTTP-Only cookie automatically being sent by browser.
+    return this.http.post<AuthResponse>(`${this.API}/refresh`, {}, { withCredentials: true }).pipe(
       tap(res => this.handleAuthResponse(res))
     );
   }
@@ -85,45 +84,73 @@ export class AuthService {
     return localStorage.getItem('accessToken');
   }
 
-  getRefreshToken(): string | null {
-    return localStorage.getItem('refreshToken');
-  }
-
   isLoggedIn(): boolean {
     return !!this.getAccessToken();
   }
 
   logout(): void {
+    // Notify server to clear the HTTP-Only cookie
+    this.http.post(`${this.API}/logout`, {}, { withCredentials: true }).subscribe({
+      next: () => this.clearLocalSession(),
+      error: () => this.clearLocalSession() // even on error, clear local session
+    });
+  }
+
+  private clearLocalSession(): void {
     localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    localStorage.removeItem('currentUser');
     this.currentUser$.next(null);
   }
 
   private handleAuthResponse(res: AuthResponse): void {
-    localStorage.setItem('accessToken', res.accessToken);
-    localStorage.setItem('refreshToken', res.refreshToken);
-
-    const user: CurrentUser = {
-      email: res.email,
-      role: res.role,
-      firstName: res.firstName,
-      lastName: res.lastName,
-      profileImageUrl: res.profileImageUrl
-    };
-
-    localStorage.setItem('currentUser', JSON.stringify(user));
-    this.currentUser$.next(user);
+    if (res.accessToken) {
+      localStorage.setItem('accessToken', res.accessToken);
+      this.decodeAndSetUser(res.accessToken);
+    } else {
+      this.clearLocalSession();
+    }
   }
 
   private loadUserFromStorage(): void {
-    const stored = localStorage.getItem('currentUser');
-    if (stored) {
-      try {
-        this.currentUser$.next(JSON.parse(stored));
-      } catch {
-        this.logout();
-      }
+    const token = this.getAccessToken();
+    if (token) {
+      this.decodeAndSetUser(token);
+    } else {
+      this.clearLocalSession();
     }
+  }
+
+  private decodeAndSetUser(token: string): void {
+    try {
+      const payload = this.parseJwt(token);
+      
+      // Check if token is expired
+      const currentTime = Math.floor(Date.now() / 1000);
+      if (payload.exp && payload.exp < currentTime) {
+        this.clearLocalSession();
+        return;
+      }
+
+      this.currentUser$.next({
+        email: payload.email || payload.sub,
+        role: payload.role,
+        firstName: payload.firstName,
+        lastName: payload.lastName,
+        profileImageUrl: payload.profileImageUrl || null
+      });
+    } catch {
+      this.clearLocalSession();
+    }
+  }
+
+  private parseJwt(token: string): any {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      window.atob(base64)
+        .split('')
+        .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+    return JSON.parse(jsonPayload);
   }
 }

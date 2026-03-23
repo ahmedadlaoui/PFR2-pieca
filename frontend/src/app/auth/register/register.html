@@ -4,11 +4,13 @@
   .delay-100 { animation-delay: 100ms; }
   .delay-200 { animation-delay: 200ms; }
   .delay-300 { animation-delay: 300ms; }
+  #seller-map { height: 360px; width: 100%; border-radius: 6px; z-index: 0; }
+  .leaflet-container { border-radius: 6px; }
 </style>
 
-<div class="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 flex flex-col justify-center items-center relative overflow-hidden">
+<div class="min-h-screen bg-[#f9f9fd] py-12 px-4 sm:px-6 flex flex-col justify-center items-center relative overflow-hidden">
   
-  <div class="absolute inset-0 pattern-dots opacity-5" style="background-image: radial-gradient(#255362 2px, transparent 2px); background-size: 30px 30px;"></div>
+  <div class="absolute inset-0 opacity-5" style="background-image: radial-gradient(#255362 2px, transparent 2px); background-size: 30px 30px;"></div>
 
   <!-- ═══════ SELECTOR VIEW ═══════ -->
   <div *ngIf="currentView === 'selector'" class="w-full max-w-4xl relative z-10 flex flex-col items-center">
@@ -65,7 +67,6 @@
         <h2 class="text-2xl font-black text-gray-900 tracking-tight">Inscription Acheteur</h2>
       </div>
 
-      <!-- Server Error -->
       <div *ngIf="serverError" class="mb-6 bg-red-50 border border-red-200 text-red-700 text-sm font-medium p-4 rounded-sm animate-fade-in">
         {{ serverError }}
       </div>
@@ -116,89 +117,191 @@
     </div>
   </div>
 
-  <!-- ═══════ SELLER FORM VIEW ═══════ -->
-  <div *ngIf="currentView === 'seller'" class="w-full max-w-lg relative z-10 flex flex-col items-center">
-    <a routerLink="/" class="text-4xl font-black tracking-tighter text-gray-900 mb-10 animate-fade-in">PIÈCA<span class="text-[#d89940]">.</span></a>
+  <!-- ═══════ SELLER FORM VIEW (3 steps) ═══════ -->
+  <div *ngIf="currentView === 'seller'" class="w-full relative z-10 flex flex-col items-center"
+    [class.max-w-lg]="sellerStep !== 3" [class.max-w-3xl]="sellerStep === 3">
+    <a routerLink="/" class="text-4xl font-black tracking-tighter text-gray-900 mb-8 animate-fade-in">PIÈCA<span class="text-[#d89940]">.</span></a>
 
-    <div class="bg-white w-full p-8 sm:p-12 rounded-md shadow-2xl shadow-gray-200/50 border border-gray-100 animate-fade-in delay-100">
-      <div class="flex items-center gap-3 mb-8">
-        <a routerLink="/register" class="text-gray-400 hover:text-gray-900 transition-colors">
+    <!-- Step Indicator -->
+    <div class="flex items-center gap-0 mb-8 animate-fade-in delay-100">
+      <div *ngFor="let step of [1,2,3]; let i = index" class="flex items-center">
+        <div class="flex flex-col items-center"
+          [class.opacity-40]="sellerStep < step">
+          <div class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-black border-2 transition-all"
+            [class.bg-[#255362]]="sellerStep >= step"
+            [class.text-white]="sellerStep >= step"
+            [class.border-[#255362]]="sellerStep >= step"
+            [class.bg-white]="sellerStep < step"
+            [class.text-gray-400]="sellerStep < step"
+            [class.border-gray-200]="sellerStep < step">
+            {{ step }}
+          </div>
+          <span class="text-[10px] font-black uppercase tracking-widest mt-1"
+            [class.text-[#255362]]="sellerStep >= step"
+            [class.text-gray-400]="sellerStep < step">
+            {{ step === 1 ? 'Compte' : step === 2 ? 'Activité' : 'Localisation' }}
+          </span>
+        </div>
+        <div *ngIf="i < 2" class="w-16 h-0.5 mb-5 mx-1 transition-all"
+          [class.bg-[#255362]]="sellerStep > step"
+          [class.bg-gray-200]="sellerStep <= step">
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white w-full p-8 sm:p-10 rounded-md shadow-2xl shadow-gray-200/50 border border-gray-100 animate-fade-in delay-200">
+      <div class="flex items-center gap-3 mb-6">
+        <button *ngIf="sellerStep > 1" type="button" (click)="prevStep()" class="text-gray-400 hover:text-gray-900 transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+        </button>
+        <a *ngIf="sellerStep === 1" routerLink="/register" class="text-gray-400 hover:text-gray-900 transition-colors">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
         </a>
-        <h2 class="text-2xl font-black text-gray-900 tracking-tight">Inscription Commerçant</h2>
+        <div>
+          <h2 class="text-2xl font-black text-gray-900 tracking-tight">
+            {{ sellerStep === 1 ? 'Vos informations' : sellerStep === 2 ? 'Votre activité' : 'Votre zone de couverture' }}
+          </h2>
+          <p class="text-xs text-gray-400 font-medium mt-1">
+            {{ sellerStep === 1 ? 'Informations de connexion' : sellerStep === 2 ? 'Type de commerçant et catégories' : 'Définissez l\'emplacement de votre boutique' }}
+          </p>
+        </div>
       </div>
 
-      <!-- Server Error -->
-      <div *ngIf="serverError" class="mb-6 bg-red-50 border border-red-200 text-red-700 text-sm font-medium p-4 rounded-sm animate-fade-in">
-        {{ serverError }}
-      </div>
-      
-      <form [formGroup]="sellerForm" (ngSubmit)="submitSeller()" class="space-y-5">
-        <div class="grid grid-cols-2 gap-4">
+      <form [formGroup]="sellerForm" class="space-y-0">
+        <div *ngIf="serverError" class="mb-6 bg-red-50 border border-red-200 text-red-700 text-sm font-medium p-4 rounded-sm animate-fade-in">
+          {{ serverError }}
+        </div>
+
+        <!-- ── STEP 1: Account Info ── -->
+        <div *ngIf="sellerStep === 1" class="space-y-5">
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-black text-gray-900 mb-2 uppercase tracking-widest">Prénom</label>
+              <input formControlName="firstName" type="text" class="w-full bg-gray-50 border border-gray-200 px-5 py-3 rounded-sm focus:outline-none focus:ring-2 focus:ring-[#cda977] transition-colors text-gray-900 font-medium" placeholder="Ahmed" />
+              <p *ngIf="sellerForm.get('firstName')?.touched && sellerForm.get('firstName')?.hasError('required')" class="text-red-500 text-xs font-bold mt-1">Prénom obligatoire</p>
+            </div>
+            <div>
+              <label class="block text-xs font-black text-gray-900 mb-2 uppercase tracking-widest">Nom</label>
+              <input formControlName="lastName" type="text" class="w-full bg-gray-50 border border-gray-200 px-5 py-3 rounded-sm focus:outline-none focus:ring-2 focus:ring-[#cda977] transition-colors text-gray-900 font-medium" placeholder="Alaoui" />
+              <p *ngIf="sellerForm.get('lastName')?.touched && sellerForm.get('lastName')?.hasError('required')" class="text-red-500 text-xs font-bold mt-1">Nom obligatoire</p>
+            </div>
+          </div>
+
           <div>
-            <label class="block text-xs font-black text-gray-900 mb-2 uppercase tracking-widest">Prénom</label>
-            <input formControlName="firstName" type="text" class="w-full bg-gray-50 border border-gray-200 px-5 py-3 rounded-sm focus:outline-none focus:ring-2 focus:ring-[#cda977] transition-colors text-gray-900 font-medium" placeholder="Ahmed" />
-            <p *ngIf="sellerForm.get('firstName')?.touched && sellerForm.get('firstName')?.hasError('required')" class="text-red-500 text-xs font-bold mt-1">Prénom obligatoire</p>
+            <label class="block text-xs font-black text-gray-900 mb-2 uppercase tracking-widest">Adresse email</label>
+            <input formControlName="email" type="email" class="w-full bg-gray-50 border border-gray-200 px-5 py-3 rounded-sm focus:outline-none focus:ring-2 focus:ring-[#cda977] transition-colors text-gray-900 font-medium" placeholder="boutique@email.com" />
+            <p *ngIf="sellerForm.get('email')?.touched && sellerForm.get('email')?.hasError('required')" class="text-red-500 text-xs font-bold mt-1">Email obligatoire</p>
+            <p *ngIf="sellerForm.get('email')?.touched && sellerForm.get('email')?.hasError('email')" class="text-red-500 text-xs font-bold mt-1">Format d'email invalide</p>
           </div>
+          
           <div>
-            <label class="block text-xs font-black text-gray-900 mb-2 uppercase tracking-widest">Nom</label>
-            <input formControlName="lastName" type="text" class="w-full bg-gray-50 border border-gray-200 px-5 py-3 rounded-sm focus:outline-none focus:ring-2 focus:ring-[#cda977] transition-colors text-gray-900 font-medium" placeholder="Alaoui" />
-            <p *ngIf="sellerForm.get('lastName')?.touched && sellerForm.get('lastName')?.hasError('required')" class="text-red-500 text-xs font-bold mt-1">Nom obligatoire</p>
+            <label class="block text-xs font-black text-gray-900 mb-2 uppercase tracking-widest">Mot de passe</label>
+            <input formControlName="password" type="password" class="w-full bg-gray-50 border border-gray-200 px-5 py-3 rounded-sm focus:outline-none focus:ring-2 focus:ring-[#cda977] transition-colors text-gray-900 font-medium" placeholder="••••••••" />
+            <p *ngIf="sellerForm.get('password')?.touched && sellerForm.get('password')?.hasError('minlength')" class="text-red-500 text-xs font-bold mt-1">Minimum 6 caractères</p>
           </div>
-        </div>
 
-        <div>
-          <label class="block text-xs font-black text-gray-900 mb-2 uppercase tracking-widest">Adresse email</label>
-          <input formControlName="email" type="email" class="w-full bg-gray-50 border border-gray-200 px-5 py-3 rounded-sm focus:outline-none focus:ring-2 focus:ring-[#cda977] transition-colors text-gray-900 font-medium" placeholder="exemple@email.com" />
-          <p *ngIf="sellerForm.get('email')?.touched && sellerForm.get('email')?.hasError('required')" class="text-red-500 text-xs font-bold mt-1">Email obligatoire</p>
-          <p *ngIf="sellerForm.get('email')?.touched && sellerForm.get('email')?.hasError('email')" class="text-red-500 text-xs font-bold mt-1">Format d'email invalide</p>
-        </div>
-        
-        <div>
-          <label class="block text-xs font-black text-gray-900 mb-2 uppercase tracking-widest">Mot de passe</label>
-          <input formControlName="password" type="password" class="w-full bg-gray-50 border border-gray-200 px-5 py-3 rounded-sm focus:outline-none focus:ring-2 focus:ring-[#cda977] transition-colors text-gray-900 font-medium" placeholder="••••••••" />
-          <p *ngIf="sellerForm.get('password')?.touched && sellerForm.get('password')?.hasError('minlength')" class="text-red-500 text-xs font-bold mt-1">Minimum 6 caractères</p>
-        </div>
-
-        <div>
-          <label class="block text-xs font-black text-gray-900 mb-2 uppercase tracking-widest">Confirmer le mot de passe</label>
-          <input formControlName="confirmPassword" type="password" class="w-full bg-gray-50 border border-gray-200 px-5 py-3 rounded-sm focus:outline-none focus:ring-2 focus:ring-[#cda977] transition-colors text-gray-900 font-medium" placeholder="••••••••" />
-        </div>
-
-        <div>
-          <label class="block text-xs font-black text-gray-900 mb-2 uppercase tracking-widest">Type de commerçant</label>
-          <select formControlName="sellerType" class="w-full bg-gray-50 border border-gray-200 px-5 py-3 rounded-sm focus:outline-none focus:ring-2 focus:ring-[#cda977] transition-colors text-gray-900 font-medium">
-            <option value="" disabled>Sélectionnez votre type</option>
-            <option *ngFor="let type of sellerTypes" [value]="type.value">{{ type.label }}</option>
-          </select>
-          <p *ngIf="sellerForm.get('sellerType')?.touched && sellerForm.get('sellerType')?.hasError('required')" class="text-red-500 text-xs font-bold mt-1">Type obligatoire</p>
-        </div>
-
-        <div>
-          <label class="block text-xs font-black text-gray-900 mb-3 uppercase tracking-widest">Catégories</label>
-          <div class="flex flex-wrap gap-2">
-            <button type="button" (click)="toggleCategory(1)" [class.bg-[#255362]]="isCategorySelected(1)" [class.text-white]="isCategorySelected(1)" class="px-4 py-2 text-xs font-black uppercase tracking-wide border border-gray-200 rounded-sm transition-colors bg-gray-50 text-gray-600 hover:border-[#255362]">
-              Électronique
-            </button>
-            <button type="button" (click)="toggleCategory(2)" [class.bg-[#cda977]]="isCategorySelected(2)" [class.text-white]="isCategorySelected(2)" class="px-4 py-2 text-xs font-black uppercase tracking-wide border border-gray-200 rounded-sm transition-colors bg-gray-50 text-gray-600 hover:border-[#cda977]">
-              Pièces Auto
-            </button>
-            <button type="button" (click)="toggleCategory(3)" [class.bg-[#d89940]]="isCategorySelected(3)" [class.text-white]="isCategorySelected(3)" class="px-4 py-2 text-xs font-black uppercase tracking-wide border border-gray-200 rounded-sm transition-colors bg-gray-50 text-gray-600 hover:border-[#d89940]">
-              Vêtements
-            </button>
+          <div>
+            <label class="block text-xs font-black text-gray-900 mb-2 uppercase tracking-widest">Confirmer le mot de passe</label>
+            <input formControlName="confirmPassword" type="password" class="w-full bg-gray-50 border border-gray-200 px-5 py-3 rounded-sm focus:outline-none focus:ring-2 focus:ring-[#cda977] transition-colors text-gray-900 font-medium" placeholder="••••••••" />
           </div>
+
+          <button type="button" (click)="nextStep()" class="w-full bg-[#cda977] hover:bg-[#b8935f] text-white font-black uppercase tracking-widest text-sm py-4 rounded-sm shadow-md transition-colors mt-2 inline-flex items-center justify-center gap-3 group">
+            Continuer
+            <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+          </button>
         </div>
 
-        <div>
-          <label class="block text-xs font-black text-gray-900 mb-2 uppercase tracking-widest">Note catégorie <span class="text-gray-400 font-medium normal-case">(optionnel)</span></label>
-          <input formControlName="customCategoryNote" type="text" class="w-full bg-gray-50 border border-gray-200 px-5 py-3 rounded-sm focus:outline-none focus:ring-2 focus:ring-[#cda977] transition-colors text-gray-900 font-medium" placeholder="Ex: Spécialisé en pièces BMW" />
+        <!-- ── STEP 2: Business Info ── -->
+        <div *ngIf="sellerStep === 2" class="space-y-5">
+          <div>
+            <label class="block text-xs font-black text-gray-900 mb-2 uppercase tracking-widest">Type de commerçant</label>
+            <select formControlName="sellerType" class="w-full bg-gray-50 border border-gray-200 px-5 py-3 rounded-sm focus:outline-none focus:ring-2 focus:ring-[#cda977] transition-colors text-gray-900 font-medium">
+              <option value="" disabled>Sélectionnez votre type</option>
+              <option *ngFor="let type of sellerTypes" [value]="type.value">{{ type.label }}</option>
+            </select>
+            <p *ngIf="sellerForm.get('sellerType')?.touched && sellerForm.get('sellerType')?.hasError('required')" class="text-red-500 text-xs font-bold mt-1">Type obligatoire</p>
+          </div>
+
+          <div>
+            <label class="block text-xs font-black text-gray-900 mb-3 uppercase tracking-widest">Catégories <span class="text-gray-400 text-[10px]">(au moins une)</span></label>
+            <div class="grid grid-cols-2 gap-2">
+              <button *ngFor="let cat of categories" type="button" (click)="toggleCategory(cat.id)"
+                class="px-4 py-2.5 text-xs font-black uppercase tracking-wide border rounded-sm transition-all text-left"
+                [class.bg-[#255362]]="isCategorySelected(cat.id)"
+                [class.text-white]="isCategorySelected(cat.id)"
+                [class.border-[#255362]]="isCategorySelected(cat.id)"
+                [class.bg-gray-50]="!isCategorySelected(cat.id)"
+                [class.text-gray-600]="!isCategorySelected(cat.id)"
+                [class.border-gray-200]="!isCategorySelected(cat.id)">
+                {{ cat.name }}
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-black text-gray-900 mb-2 uppercase tracking-widest">Note catégorie <span class="text-gray-400 font-medium normal-case">(optionnel)</span></label>
+            <input formControlName="customCategoryNote" type="text" class="w-full bg-gray-50 border border-gray-200 px-5 py-3 rounded-sm focus:outline-none focus:ring-2 focus:ring-[#cda977] transition-colors text-gray-900 font-medium" placeholder="Ex: Spécialisé en pièces BMW" />
+          </div>
+
+          <button type="button" (click)="nextStep()" class="w-full bg-[#cda977] hover:bg-[#b8935f] text-white font-black uppercase tracking-widest text-sm py-4 rounded-sm shadow-md transition-colors mt-2 inline-flex items-center justify-center gap-3 group">
+            Définir ma zone de couverture
+            <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+          </button>
         </div>
-        
-        <button type="submit" [disabled]="loading" class="w-full bg-[#cda977] hover:bg-[#b8935f] disabled:opacity-50 text-white font-black uppercase tracking-widest text-sm py-4 rounded-sm shadow-md transition-colors mt-2 inline-flex items-center justify-center gap-3 group">
-          <span *ngIf="!loading">Rejoindre le réseau</span>
-          <span *ngIf="loading">Chargement...</span>
-          <svg *ngIf="!loading" class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-        </button>
+
+        <!-- ── STEP 3: Location Map ── -->
+        <div *ngIf="sellerStep === 3" class="space-y-5">
+
+          <!-- Callout -->
+          <div class="bg-[#255362]/8 border border-[#255362]/20 rounded-md p-4 flex gap-3">
+            <svg class="w-5 h-5 text-[#255362] shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <div>
+              <p class="text-sm font-bold text-[#255362] mb-1">Définissez votre zone de service</p>
+              <p class="text-xs text-[#255362]/80 font-medium">Cliquez sur la carte pour placer votre boutique. Le cercle bleu représente la zone dans laquelle vous recevrez des demandes d'acheteurs.</p>
+            </div>
+          </div>
+
+          <!-- GPS Button -->
+          <button type="button" (click)="useMyLocation()"
+            class="w-full flex items-center justify-center gap-2 border-2 border-dashed border-[#255362]/40 hover:border-[#255362] text-[#255362] font-black text-sm py-3 rounded-md transition-colors hover:bg-[#255362]/5">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            Utiliser ma position GPS
+          </button>
+
+          <!-- Leaflet Map -->
+          <div id="seller-map" class="border border-gray-200 shadow-sm"></div>
+
+          <!-- Selected location display -->
+          <div *ngIf="selectedLat && selectedLon" class="flex items-center gap-2 bg-green-50 border border-green-200 text-green-800 text-xs font-bold px-4 py-2.5 rounded-md">
+            <svg class="w-4 h-4 text-green-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            Emplacement sélectionné : {{ selectedLat | number:'1.4-4' }}° N, {{ selectedLon | number:'1.4-4' }}° E
+          </div>
+          <div *ngIf="!selectedLat || !selectedLon" class="flex items-center gap-2 bg-amber-50 border border-amber-200 text-amber-800 text-xs font-bold px-4 py-2.5 rounded-md">
+            <svg class="w-4 h-4 text-amber-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+            Aucun emplacement sélectionné — cliquez sur la carte ou utilisez le GPS
+          </div>
+
+          <!-- Radius Control -->
+          <div class="bg-gray-50 rounded-md border border-gray-200 p-4">
+            <div class="flex items-center justify-between mb-3">
+              <label class="text-xs font-black text-gray-700 uppercase tracking-widest">Rayon de couverture</label>
+              <span class="text-lg font-black text-[#255362]">{{ selectedRadius }} km</span>
+            </div>
+            <input type="range" min="1" max="100" [value]="selectedRadius"
+              (input)="onRadiusChange(+$any($event.target).value)"
+              class="w-full h-2 bg-gray-200 rounded-full appearance-none cursor-pointer accent-[#255362]"/>
+            <div class="flex justify-between text-[10px] text-gray-400 font-bold mt-1">
+              <span>1 km</span><span>25 km</span><span>50 km</span><span>100 km</span>
+            </div>
+          </div>
+
+          <button type="button" (click)="submitSeller()" [disabled]="loading || !selectedLat || !selectedLon"
+            class="w-full bg-[#cda977] hover:bg-[#b8935f] disabled:opacity-50 disabled:cursor-not-allowed text-white font-black uppercase tracking-widest text-sm py-4 rounded-sm shadow-md transition-colors inline-flex items-center justify-center gap-3 group">
+            <span *ngIf="!loading">Finaliser mon inscription</span>
+            <span *ngIf="loading">Enregistrement...</span>
+            <svg *ngIf="!loading" class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+          </button>
+        </div>
       </form>
     </div>
 
