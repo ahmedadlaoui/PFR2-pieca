@@ -8,15 +8,12 @@ import java.time.LocalDateTime;
 
 @Data
 @Builder
-public class CreateRequestResponse {
+public class BuyerRequestItemResponse {
     private Long id;
     private String title;
     private String description;
     private Long categoryId;
     private RequestStatus status;
-    private Double latitude;
-    private Double longitude;
     private String imageUrl;
-    private Double radiusKm;
     private LocalDateTime createdAt;
 }

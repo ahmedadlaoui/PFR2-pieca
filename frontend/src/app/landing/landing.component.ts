@@ -46,11 +46,11 @@ export class LandingPageComponent implements OnInit, OnDestroy {
     event?.preventDefault();
 
     if (!this.authService.isLoggedIn()) {
-      this.router.navigate(['/login'], { queryParams: { returnUrl: '/demand/new' } });
+      this.router.navigate(['/login'], { queryParams: { returnUrl: '/buyer/demand/new' } });
       return;
     }
 
-    this.router.navigate(['/demand/new']);
+    this.router.navigate(['/buyer/demand/new']);
   }
 
   goToDashboard(event?: Event): void {

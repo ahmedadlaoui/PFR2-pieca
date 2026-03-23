@@ -11,7 +11,7 @@ declare const L: any;
 @Component({
   selector: 'app-new-demand',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './new-demand.html'
 })
 export class NewDemand implements OnInit, AfterViewInit, OnDestroy {
@@ -37,6 +37,13 @@ export class NewDemand implements OnInit, AfterViewInit, OnDestroy {
   locationError = '';
   successMessage = '';
   errorMessage = '';
+  selectedPhoto: File | null = null;
+  selectedPhotoName = '';
+  selectedPhotoPreviewUrl = '';
+  photoErrorMessage = '';
+
+  private readonly maxPhotoSizeBytes = 5 * 1024 * 1024;
+  private readonly allowedPhotoMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
 
   readonly categories = [
     { id: 1, label: 'Electronique et High-Tech' },
@@ -71,6 +78,7 @@ export class NewDemand implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.destroyMap();
+    this.revokePhotoPreview();
     if (this.userSub) {
       this.userSub.unsubscribe();
     }
@@ -99,7 +107,7 @@ export class NewDemand implements OnInit, AfterViewInit, OnDestroy {
 
   goToDemandPage(event?: Event): void {
     event?.preventDefault();
-    this.router.navigate(['/demand/new']);
+    this.router.navigate(['/buyer/demand/new']);
   }
 
   goToDashboard(event?: Event): void {
@@ -129,6 +137,49 @@ export class NewDemand implements OnInit, AfterViewInit, OnDestroy {
 
   get longitudeValue(): number | null {
     return this.demandForm.value.longitude ?? null;
+  }
+
+  onPhotoSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0] ?? null;
+    this.photoErrorMessage = '';
+    this.errorMessage = '';
+
+    if (!file) {
+      this.clearSelectedPhoto();
+      return;
+    }
+
+    if (!this.allowedPhotoMimeTypes.includes(file.type)) {
+      this.clearSelectedPhoto();
+      this.photoErrorMessage = 'Format non supporte. Utilisez JPG, PNG ou WEBP.';
+      return;
+    }
+
+    if (file.size > this.maxPhotoSizeBytes) {
+      this.clearSelectedPhoto();
+      this.photoErrorMessage = 'Image trop volumineuse. Taille maximale autorisee: 5 MB.';
+      return;
+    }
+
+    const previewObjectUrl = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      this.revokePhotoPreview();
+      this.selectedPhoto = file;
+      this.selectedPhotoName = file.name;
+      this.selectedPhotoPreviewUrl = previewObjectUrl;
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(previewObjectUrl);
+      this.clearSelectedPhoto();
+      this.photoErrorMessage = 'Le fichier selectionne est invalide ou corrompu.';
+    };
+    img.src = previewObjectUrl;
+  }
+
+  removeSelectedPhoto(): void {
+    this.clearSelectedPhoto();
   }
 
   async initMapSafe(): Promise<void> {
@@ -330,7 +381,12 @@ export class NewDemand implements OnInit, AfterViewInit, OnDestroy {
 
     if (this.demandForm.invalid) {
       this.demandForm.markAllAsTouched();
-      this.errorMessage = 'Merci de completer tous les champs obligatoires avant publication.';
+      this.errorMessage = 'Merci de completer tous les champs obligatoires avant creation.';
+      return;
+    }
+
+    if (this.photoErrorMessage) {
+      this.errorMessage = 'Merci de corriger le probleme de photo avant creation.';
       return;
     }
 
@@ -342,16 +398,56 @@ export class NewDemand implements OnInit, AfterViewInit, OnDestroy {
       latitude: this.demandForm.value.latitude!,
       longitude: this.demandForm.value.longitude!,
       radiusKm: this.selectedRadiusKm
-    }).subscribe({
+    }, this.selectedPhoto).subscribe({
       next: (res) => {
         this.submitting = false;
-        this.successMessage = `Demande #${res.id} publiee avec succes.`;
+        this.successMessage = `Demande #${res.id} creee avec succes.`;
+        this.clearSelectedPhoto();
       },
       error: (err) => {
         this.submitting = false;
-        this.errorMessage = err.message || 'Impossible de publier la demande pour le moment.';
+        const fallback = 'Impossible de creer la demande pour le moment.';
+        const message = (err?.message || fallback) as string;
+
+        if (message.toLowerCase().includes('payload') || message.toLowerCase().includes('too large') || message.includes('413')) {
+          this.errorMessage = 'Image trop lourde pour le serveur. Reduisez sa taille et reessayez.';
+          return;
+        }
+
+        if (message.toLowerCase().includes('unsupported') || message.toLowerCase().includes('media type') || message.includes('415')) {
+          this.errorMessage = 'Type de fichier non supporte par le serveur. Utilisez JPG, PNG ou WEBP.';
+          return;
+        }
+
+        this.errorMessage = message || fallback;
       }
     });
+  }
+
+  get selectedPhotoSizeLabel(): string {
+    if (!this.selectedPhoto) {
+      return '';
+    }
+
+    const sizeKb = this.selectedPhoto.size / 1024;
+    if (sizeKb < 1024) {
+      return `${Math.round(sizeKb)} KB`;
+    }
+
+    return `${(sizeKb / 1024).toFixed(2)} MB`;
+  }
+
+  private clearSelectedPhoto(): void {
+    this.selectedPhoto = null;
+    this.selectedPhotoName = '';
+    this.revokePhotoPreview();
+  }
+
+  private revokePhotoPreview(): void {
+    if (this.selectedPhotoPreviewUrl) {
+      URL.revokeObjectURL(this.selectedPhotoPreviewUrl);
+      this.selectedPhotoPreviewUrl = '';
+    }
   }
 
   private destroyMap(): void {
