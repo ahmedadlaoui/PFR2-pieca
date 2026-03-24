@@ -38,6 +38,18 @@ export class LandingPageComponent implements OnInit, OnDestroy {
     this.dropdownOpen = !this.dropdownOpen;
   }
 
+  get isSeller(): boolean {
+    return this.currentUser?.role === 'SELLER';
+  }
+
+  get canCreateDemand(): boolean {
+    return !this.currentUser || this.currentUser.role === 'BUYER';
+  }
+
+  get canBecomeSeller(): boolean {
+    return !this.currentUser || this.currentUser.role === 'BUYER';
+  }
+
   closeDropdown(): void {
     this.dropdownOpen = false;
   }
@@ -47,6 +59,11 @@ export class LandingPageComponent implements OnInit, OnDestroy {
 
     if (!this.authService.isLoggedIn()) {
       this.router.navigate(['/login'], { queryParams: { returnUrl: '/buyer/demand/new' } });
+      return;
+    }
+
+    if (this.currentUser?.role === 'SELLER') {
+      this.router.navigate(['/seller/dashboard']);
       return;
     }
 

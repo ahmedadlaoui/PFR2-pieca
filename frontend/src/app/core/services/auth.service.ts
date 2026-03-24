@@ -85,7 +85,21 @@ export class AuthService {
   }
 
   isLoggedIn(): boolean {
-    return !!this.getAccessToken();
+    const token = this.getAccessToken();
+    if (!token || this.isTokenExpired(token)) {
+      this.clearLocalSession();
+      return false;
+    }
+
+    if (!this.currentUser$.value) {
+      this.decodeAndSetUser(token);
+    }
+
+    return !!this.currentUser$.value;
+  }
+
+  getCurrentUserSnapshot(): CurrentUser | null {
+    return this.currentUser$.value;
   }
 
   logout(): void {
@@ -139,6 +153,16 @@ export class AuthService {
       });
     } catch {
       this.clearLocalSession();
+    }
+  }
+
+  private isTokenExpired(token: string): boolean {
+    try {
+      const payload = this.parseJwt(token);
+      const currentTime = Math.floor(Date.now() / 1000);
+      return !!(payload.exp && payload.exp < currentTime);
+    } catch {
+      return true;
     }
   }
 

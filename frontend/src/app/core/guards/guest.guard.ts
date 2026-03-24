@@ -10,9 +10,16 @@ export const guestGuard: CanActivateFn = (route, state) => {
     return true;
   }
 
-  if (authService.currentUser$.value?.role === 'SELLER') {
+  const role = authService.getCurrentUserSnapshot()?.role;
+
+  if (role === 'SELLER') {
     return router.parseUrl('/seller/dashboard');
   }
 
-  return router.parseUrl('/buyer/dashboard');
+  if (role === 'BUYER') {
+    return router.parseUrl('/buyer/dashboard');
+  }
+
+  authService.logout();
+  return router.parseUrl('/login');
 };

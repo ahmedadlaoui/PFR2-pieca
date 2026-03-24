@@ -29,10 +29,27 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
           catchError(refreshError => {
             isRefreshing = false;
             authService.logout();
-            router.navigate(['/login']);
+            router.navigate(['/login'], { queryParams: { returnUrl: '/' } });
             return throwError(() => new Error('Session expirée, veuillez vous reconnecter'));
           })
         );
+      }
+
+      if (error.status === 401 && req.url.includes('/auth/refresh')) {
+        authService.logout();
+        router.navigate(['/login'], { queryParams: { returnUrl: '/' } });
+      }
+
+      if (error.status === 403) {
+        const role = authService.getCurrentUserSnapshot()?.role;
+        if (role === 'SELLER') {
+          router.navigate(['/seller/dashboard']);
+        } else if (role === 'BUYER') {
+          router.navigate(['/buyer/dashboard']);
+        } else {
+          authService.logout();
+          router.navigate(['/login']);
+        }
       }
 
       let errorMessage = 'Une erreur inattendue est survenue';

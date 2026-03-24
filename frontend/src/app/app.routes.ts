@@ -10,6 +10,7 @@ export const routes: Routes = [
       path: 'buyer', 
       loadComponent: () => import('./buyer/buyer-layout').then(m => m.BuyerLayout),
       canActivate: [roleGuard], 
+      canActivateChild: [roleGuard],
       data: { roles: ['BUYER'] },
       children: [
         { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
@@ -22,11 +23,12 @@ export const routes: Routes = [
       path: 'seller',
       loadComponent: () => import('./seller/seller-layout').then(m => m.SellerLayout),
       canActivate: [roleGuard],
+      canActivateChild: [roleGuard],
       data: { roles: ['SELLER'] },
       children: [
         { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
         { path: 'dashboard', loadComponent: () => import('./seller/seller-dashboard').then(m => m.SellerDashboard) },
-        { path: 'profile', loadComponent: () => import('./seller/seller-profile').then(m => m.SellerProfile) }, // fixed sync
+        { path: 'profile', loadComponent: () => import('./seller/seller-profile').then(m => m.SellerProfile) },
         { path: 'pending-requests', loadComponent: () => import('./seller/seller-pending-requests').then(m => m.SellerPendingRequests) }
       ]
     },
