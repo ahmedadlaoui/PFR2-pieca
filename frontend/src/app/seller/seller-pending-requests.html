@@ -1,0 +1,28 @@
+<div class="py-2 px-2 w-full flex flex-col gap-2">
+  <div class="bg-white border border-gray-100 rounded-xl p-5 md:p-6 shadow-sm">
+    <p class="text-[11px] uppercase tracking-[0.2em] font-black text-[#255362]">Demandes sauvegardees</p>
+    <h1 class="text-2xl font-black text-gray-900 mt-1">Demandes avec offre en attente</h1>
+    <p class="text-sm text-gray-500 mt-1.5 font-medium">Liste simple des demandes du vendeur dont l'offre est encore en attente.</p>
+  </div>
+
+  <div class="bg-white border border-gray-100 rounded-xl p-5 md:p-6 shadow-sm">
+    <div class="space-y-3" *ngIf="requests.length > 0">
+      <article *ngFor="let request of requests" class="rounded-lg border border-gray-100 bg-gray-50 p-4">
+        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+          <div>
+            <p class="text-sm font-black text-gray-900">#{{ request.id }} - {{ request.title }}</p>
+            <p class="text-xs text-gray-500 mt-1">{{ request.city }} • Creee le {{ request.createdAt }}</p>
+            <p class="text-sm text-gray-700 mt-2">{{ request.note }}</p>
+          </div>
+          <span class="inline-flex items-center h-fit px-2.5 py-1 rounded text-[11px] font-bold uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200">
+            {{ request.offerStatus }}
+          </span>
+        </div>
+      </article>
+    </div>
+
+    <div *ngIf="requests.length === 0" class="rounded-lg border border-dashed border-gray-200 p-6 text-center">
+      <p class="text-sm font-semibold text-gray-500">Aucune demande avec offre en attente pour le moment.</p>
+    </div>
+  </div>
+</div>

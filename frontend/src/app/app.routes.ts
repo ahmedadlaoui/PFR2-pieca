@@ -18,7 +18,18 @@ export const routes: Routes = [
         { path: 'demand/:id', loadComponent: () => import('./demand/demand-details').then(m => m.DemandDetails) }
       ]
     },
-    { path: 'seller/dashboard', loadComponent: () => import('./seller/seller-dashboard').then(m => m.SellerDashboard), canActivate: [roleGuard], data: { roles: ['SELLER'] } },
+    {
+      path: 'seller',
+      loadComponent: () => import('./seller/seller-layout').then(m => m.SellerLayout),
+      canActivate: [roleGuard],
+      data: { roles: ['SELLER'] },
+      children: [
+        { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+        { path: 'dashboard', loadComponent: () => import('./seller/seller-dashboard').then(m => m.SellerDashboard) },
+        { path: 'profile', loadComponent: () => import('./seller/seller-profile').then(m => m.SellerProfile) }, // fixed sync
+        { path: 'pending-requests', loadComponent: () => import('./seller/seller-pending-requests').then(m => m.SellerPendingRequests) }
+      ]
+    },
     { path: 'login', loadComponent: () => import('./auth/login/login').then(m => m.Login), canActivate: [guestGuard] },
     { path: 'register', loadComponent: () => import('./auth/register/register').then(m => m.Register), canActivate: [guestGuard] },
     { path: 'register/:role', loadComponent: () => import('./auth/register/register').then(m => m.Register), canActivate: [guestGuard] },

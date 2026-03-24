@@ -1,0 +1,50 @@
+pieca-frontend  | chunk-TP3JOOYF.js   | -                       |   1.83 kB | 
+pieca-frontend  | 
+pieca-frontend  | Application bundle generation complete. [4.569 seconds] - 2026-03-24T18:44:02.033Z
+pieca-frontend  | 
+pieca-frontend  | Watch mode enabled. Watching for file changes...
+pieca-frontend  | NOTE: Raw file sizes do not reflect development server per-request transformations.
+pieca-frontend  |   ???  Local:   http://localhost:4200/
+pieca-frontend  |   ???  Network: http://172.18.0.4:4200/
+pieca-frontend  | 
+pieca-frontend  | > frontend@0.0.0 start
+pieca-frontend  | > ng serve --proxy-config proxy.conf.json --host 0.0.0.0 --poll 2000
+pieca-frontend  | 
+pieca-frontend  | 
+pieca-frontend  | Warning: This is a simple server for use in testing or debugging Angular applications
+pieca-frontend  | locally. It hasn't been reviewed for security issues.
+pieca-frontend  | 
+pieca-frontend  | Binding this server to an open connection can result in compromising your application or
+pieca-frontend  | computer. Using a different host than the one passed to the "--host" flag might result in
+pieca-frontend  | websocket connection issues.
+pieca-frontend  |     
+pieca-frontend  | ??? Building...
+pieca-frontend  | ??? Building...
+pieca-frontend  | Initial chunk files | Names                   |  Raw size
+pieca-frontend  | main.js             | main                    |  66.91 kB | 
+pieca-frontend  | styles.css          | styles                  |  41.46 kB | 
+pieca-frontend  | chunk-H2M6V4UQ.js   | -                       |   3.59 kB | 
+pieca-frontend  | chunk-R7WCV5R6.js   | -                       | 793 bytes | 
+pieca-frontend  | polyfills.js        | polyfills               |  95 bytes | 
+pieca-frontend  | 
+pieca-frontend  |                     | Initial total           | 112.85 kB
+pieca-frontend  | 
+pieca-frontend  | Lazy chunk files    | Names                   |  Raw size
+pieca-frontend  | chunk-5X3KJP6V.js   | register                |  83.89 kB | 
+pieca-frontend  | chunk-JWDZMES7.js   | new-demand              |  50.02 kB | 
+pieca-frontend  | chunk-W7D7CQGB.js   | demand-details          |  29.63 kB | 
+pieca-frontend  | chunk-IEPKN7NO.js   | buyer-layout            |  26.40 kB | 
+pieca-frontend  | chunk-TMMDJZ5Z.js   | buyer-dashboard         |  25.08 kB | 
+pieca-frontend  | chunk-6QORX4AK.js   | seller-layout           |  24.85 kB | 
+pieca-frontend  | chunk-N4YME4WO.js   | login                   |  17.63 kB | 
+pieca-frontend  | chunk-D5TCBFUK.js   | seller-profile          |  17.50 kB | 
+pieca-frontend  | chunk-DWORGF6D.js   | seller-dashboard        |   9.07 kB | 
+pieca-frontend  | chunk-OKJO4Z6W.js   | seller-pending-requests |   8.70 kB | 
+pieca-frontend  | chunk-TP3JOOYF.js   | -                       |   1.83 kB | 
+pieca-frontend  | 
+pieca-frontend  | Application bundle generation complete. [4.529 seconds] - 2026-03-24T18:45:12.611Z
+pieca-frontend  | 
+pieca-frontend  | Watch mode enabled. Watching for file changes...
+pieca-frontend  | NOTE: Raw file sizes do not reflect development server per-request transformations.
+pieca-frontend  |   ???  Local:   http://localhost:4200/
+pieca-frontend  |   ???  Network: http://172.18.0.4:4200/

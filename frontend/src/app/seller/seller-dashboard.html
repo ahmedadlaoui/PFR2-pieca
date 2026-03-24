@@ -1,60 +1,45 @@
-<style>
-  @keyframes riseIn {
-    from { opacity: 0; transform: translateY(12px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
+<div class="py-2 px-2 w-full flex flex-col gap-2">
+  <div class="bg-white border border-gray-100 rounded-xl p-5 md:p-6 shadow-sm flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+    <div>
+      <p class="text-[11px] uppercase tracking-[0.2em] font-black text-[#255362]">Tableau vendeur</p>
+      <h1 class="text-2xl font-black text-gray-900 mt-1">Zone de service</h1>
+      <p class="text-sm text-gray-500 mt-1.5 font-medium">Position actuelle de votre service et zone de couverture.</p>
+    </div>
+    <button type="button" class="inline-flex items-center justify-center px-4 py-2.5 rounded bg-[#255362] text-white text-xs font-black uppercase tracking-widest hover:bg-[#1d4450] transition-colors shadow-sm hover:shadow-md">
+      Search for clients
+    </button>
+  </div>
 
-  .rise-in {
-    opacity: 0;
-    animation: riseIn 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  }
-
-  .rise-in.delay-120 { animation-delay: 120ms; }
-  .rise-in.delay-220 { animation-delay: 220ms; }
-</style>
-
-<div class="min-h-screen bg-[#f4f6fb] py-2 px-2 w-full">
-  <div class="max-w-full mx-auto flex flex-col gap-2">
-    <div class="rise-in bg-white border border-gray-100 rounded-xl p-5 md:p-6 shadow-sm flex items-center justify-between gap-2">
+  <div class="bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden">
+    <div class="p-4 md:px-6 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between gap-3">
       <div>
-        <p class="text-[11px] uppercase tracking-[0.2em] font-black text-[#d89940]">Seller dashboard</p>
-        <h1 class="text-2xl sm:text-3xl font-black text-gray-900 mt-1">Business overview</h1>
-        <p class="text-sm text-gray-500 mt-2 font-medium">Monitor incoming buyer demands and response performance.</p>
+        <p class="text-sm font-bold text-gray-900">Carte de localisation</p>
+        <p class="text-xs text-gray-500 text-opacity-80">Template frontend: la carte sera ensuite connectee aux coordonnees du vendeur.</p>
       </div>
-      <a routerLink="/demand/new" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-sm bg-gray-900 text-white text-xs font-black uppercase tracking-widest hover:bg-[#2f2f2f] transition-colors">
-        Open demand board
-      </a>
+      <span class="inline-flex items-center px-2 py-1 rounded text-[11px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">Actif</span>
     </div>
 
-    <div class="mt-2 grid grid-cols-1 md:grid-cols-3 gap-2 rise-in delay-120">
-      <div class="bg-white border border-gray-100 rounded-xl p-5 shadow-sm">
-        <p class="text-xs font-black uppercase tracking-widest text-gray-500">Nearby demands</p>
-        <p class="text-3xl font-black text-gray-900 mt-2">34</p>
-        <p class="text-sm text-emerald-600 font-bold mt-2">+8 in 24h</p>
+    <div class="p-4 md:p-6">
+      <div class="rounded-xl overflow-hidden border border-gray-200 bg-gray-100 h-[26rem]">
+        <iframe
+          class="w-full h-full"
+          title="Seller service location map"
+          loading="lazy"
+          src="https://www.openstreetmap.org/export/embed.html?bbox=2.318%2C48.84%2C2.378%2C48.89&layer=mapnik&marker=48.8566%2C2.3522">
+        </iframe>
       </div>
-      <div class="bg-white border border-gray-100 rounded-xl p-5 shadow-sm">
-        <p class="text-xs font-black uppercase tracking-widest text-gray-500">Offers sent</p>
-        <p class="text-3xl font-black text-gray-900 mt-2">22</p>
-        <p class="text-sm text-[#255362] font-bold mt-2">65% conversion</p>
-      </div>
-      <div class="bg-white border border-gray-100 rounded-xl p-5 shadow-sm">
-        <p class="text-xs font-black uppercase tracking-widest text-gray-500">Avg response time</p>
-        <p class="text-3xl font-black text-gray-900 mt-2">12m</p>
-        <p class="text-sm text-gray-500 font-bold mt-2">Target: under 15m</p>
-      </div>
-    </div>
-
-    <div class="mt-2 bg-white border border-gray-100 rounded-xl p-6 shadow-sm rise-in delay-220">
-      <h2 class="text-lg font-black text-gray-900">Pipeline snapshot</h2>
-      <div class="mt-4 space-y-3">
-        <div class="p-4 rounded-md bg-gray-50 border border-gray-100">
-          <p class="text-sm font-semibold text-gray-800">7 demands waiting for initial quote.</p>
+      <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-2">
+        <div class="p-4 rounded-lg bg-gray-50 border border-gray-100">
+          <p class="text-xs font-black uppercase tracking-widest text-gray-500">Position</p>
+          <p class="text-sm font-bold text-gray-900 mt-1">48.8566, 2.3522</p>
         </div>
-        <div class="p-4 rounded-md bg-gray-50 border border-gray-100">
-          <p class="text-sm font-semibold text-gray-800">5 offers awaiting buyer confirmation.</p>
+        <div class="p-4 rounded-lg bg-gray-50 border border-gray-100">
+          <p class="text-xs font-black uppercase tracking-widest text-gray-500">Rayon actif</p>
+          <p class="text-sm font-bold text-gray-900 mt-1">12 km</p>
         </div>
-        <div class="p-4 rounded-md bg-gray-50 border border-gray-100">
-          <p class="text-sm font-semibold text-gray-800">3 deliveries scheduled for today.</p>
+        <div class="p-4 rounded-lg bg-gray-50 border border-gray-100">
+          <p class="text-xs font-black uppercase tracking-widest text-gray-500">Ville</p>
+          <p class="text-sm font-bold text-gray-900 mt-1">Paris centre</p>
         </div>
       </div>
     </div>
