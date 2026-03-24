@@ -53,6 +53,7 @@ public class RequestService {
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
     private final SellerProfileRepository sellerProfileRepository;
+    private final com.pieca.backend.repositories.OfferRepository offerRepository;
 
     @Transactional
     public CreateRequestResponse createBuyerRequest(CreateRequestRequest payload, String buyerEmail, MultipartFile photo) {
@@ -248,10 +249,14 @@ public class RequestService {
                                 longitude, latitude, radiusKm, categoryIds, pageable
                 );
 
-                return requests.map(this::toBuyerItem);
+                return requests.map(request -> toBuyerItem(request, latitude, longitude));
         }
 
         private BuyerRequestItemResponse toBuyerItem(Request request) {
+                return toBuyerItem(request, null, null);
+        }
+
+        private BuyerRequestItemResponse toBuyerItem(Request request, Double sellerLatitude, Double sellerLongitude) {
                 String title = request.getDescription();
                 String details = "";
                 if (request.getDescription() != null) {
@@ -262,15 +267,43 @@ public class RequestService {
                         }
                 }
 
+                Double distanceKm = null;
+                if (sellerLatitude != null
+                                && sellerLongitude != null
+                                && request.getLocation() != null) {
+                        distanceKm = haversineKm(
+                                        sellerLatitude,
+                                        sellerLongitude,
+                                        request.getLocation().getY(),
+                                        request.getLocation().getX()
+                        );
+                }
+
                 return BuyerRequestItemResponse.builder()
                                 .id(request.getId())
                                 .title(title)
                                 .description(details)
                                 .categoryId(request.getCategory() != null ? request.getCategory().getId() : null)
+                                .categoryName(request.getCategory() != null ? request.getCategory().getName() : null)
+                                .buyerFirstName(request.getBuyer() != null ? request.getBuyer().getFirstName() : null)
+                                .buyerLastName(request.getBuyer() != null ? request.getBuyer().getLastName() : null)
+                                .buyerPhone(request.getBuyer() != null ? request.getBuyer().getPhoneNumber() : null)
+                                .distanceKm(distanceKm)
                                 .status(request.getStatus())
                                 .imageUrl(request.getImageUrl())
                                 .createdAt(request.getCreatedAt())
                                 .build();
+        }
+
+        private double haversineKm(double lat1, double lon1, double lat2, double lon2) {
+                double earthRadiusKm = 6371.0;
+                double dLat = Math.toRadians(lat2 - lat1);
+                double dLon = Math.toRadians(lon2 - lon1);
+                double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+                                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                                * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+                double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+                return earthRadiusKm * c;
         }
 
         private String storePhoto(MultipartFile photo) {
@@ -307,6 +340,61 @@ public class RequestService {
                 }
 
                 return "/api/v1/requests/photos/" + fileName;
+        }
+
+        @Transactional
+        public void acceptRequest(Long requestId, String sellerEmail) {
+                User seller = userRepository.findByEmail(sellerEmail)
+                                .orElseThrow(() -> new ResourceNotFoundException("Vendeur introuvable"));
+
+                if (seller.getRole() != Role.SELLER) {
+                        throw new UnauthorizedActionException("Seuls les vendeurs peuvent accepter des demandes");
+                }
+
+                Request request = requestRepository.findById(requestId)
+                                .orElseThrow(() -> new ResourceNotFoundException("Demande introuvable"));
+
+                if (offerRepository.existsByRequestIdAndSellerId(requestId, seller.getId())) {
+                        throw new BusinessViolationException("Vous avez deja accepte cette demande");
+                }
+
+                com.pieca.backend.domain.entities.Offer offer = com.pieca.backend.domain.entities.Offer.builder()
+                                .price(java.math.BigDecimal.ONE) // Mock price
+                                .proofImageUrl("N/A") // Mock image
+                                .status(com.pieca.backend.domain.enums.OfferStatus.PENDING)
+                                .request(request)
+                                .seller(seller)
+                                .build();
+
+                offerRepository.save(offer);
+        }
+
+        @Transactional(readOnly = true)
+        public Page<BuyerRequestItemResponse> getAcceptedRequests(String sellerEmail, int page, int size) {
+                User seller = userRepository.findByEmail(sellerEmail)
+                                .orElseThrow(() -> new ResourceNotFoundException("Vendeur introuvable"));
+
+                if (seller.getRole() != Role.SELLER) {
+                        throw new UnauthorizedActionException("Seuls les vendeurs peuvent consulter leurs demandes acceptees");
+                }
+
+                Pageable pageable = PageRequest.of(Math.max(page, 0), Math.max(size, 1));
+                Page<com.pieca.backend.domain.entities.Offer> offers = offerRepository.findBySellerIdOrderByCreatedAtDesc(seller.getId(), pageable);
+
+                // Use the seller profile to get location and compute distance if available
+                SellerProfile profile = sellerProfileRepository.findByUserId(seller.getId()).orElse(null);
+                Double latitude = null;
+                Double longitude = null;
+                
+                if (profile != null && profile.getLocation() != null) {
+                        latitude = profile.getLocation().getY();
+                        longitude = profile.getLocation().getX();
+                }
+                
+                final Double sellerLat = latitude;
+                final Double sellerLon = longitude;
+
+                return offers.map(offer -> toBuyerItem(offer.getRequest(), sellerLat, sellerLon));
         }
 }
 

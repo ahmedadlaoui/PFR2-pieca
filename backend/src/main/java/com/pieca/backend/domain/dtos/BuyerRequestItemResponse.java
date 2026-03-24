@@ -13,6 +13,11 @@ public class BuyerRequestItemResponse {
     private String title;
     private String description;
     private Long categoryId;
+    private String categoryName;
+    private String buyerFirstName;
+    private String buyerLastName;
+    private String buyerPhone;
+    private Double distanceKm;
     private RequestStatus status;
     private String imageUrl;
     private LocalDateTime createdAt;

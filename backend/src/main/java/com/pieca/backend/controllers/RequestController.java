@@ -94,4 +94,30 @@ public class RequestController {
         Page<BuyerRequestItemResponse> response = requestService.getNearbyRequests(authentication.getName(), page, size);
         return ResponseEntity.ok(response);
     }
+
+    @PostMapping("/{id}/accept")
+    public ResponseEntity<Void> acceptRequest(
+            @PathVariable Long id,
+            Authentication authentication
+    ) {
+        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getName())) {
+            throw new InvalidCredentialsException("Authentification requise pour accepter cette demande");
+        }
+        requestService.acceptRequest(id, authentication.getName());
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/accepted")
+    public ResponseEntity<Page<BuyerRequestItemResponse>> getAcceptedRequests(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            Authentication authentication
+    ) {
+        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getName())) {
+            throw new InvalidCredentialsException("Authentification requise");
+        }
+        Page<BuyerRequestItemResponse> response = requestService.getAcceptedRequests(authentication.getName(), page, size);
+        return ResponseEntity.ok(response);
+    }
+
 }
