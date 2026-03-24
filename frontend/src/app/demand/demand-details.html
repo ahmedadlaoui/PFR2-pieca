@@ -1,7 +1,7 @@
-<div class="py-6 px-4 md:px-8 w-full flex-grow">
+<div class="py-2 px-2 w-full flex-grow">
   <div class="max-w-7xl w-full mx-auto">
     
-    <div class="mb-6 flex items-center justify-between">
+    <div class="mb-2 flex items-center justify-between">
       <a routerLink="/buyer/dashboard" class="inline-flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-gray-900 transition-colors">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
         Retour au tableau de bord
@@ -14,14 +14,14 @@
       <p class="text-sm font-bold text-gray-500 uppercase tracking-widest">Chargement des détails...</p>
     </div>
 
-    <div *ngIf="errorMessage && !loading" class="bg-red-50 border border-red-200 rounded-2xl p-8 text-center mt-4">
+    <div *ngIf="errorMessage && !loading" class="bg-red-50 border border-red-200 rounded-2xl p-8 text-center mt-2">
       <svg class="w-12 h-12 text-red-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
       <p class="text-sm font-bold text-red-700">{{ errorMessage }}</p>
       <a routerLink="/buyer/dashboard" class="mt-4 inline-block text-xs font-black uppercase text-red-600 hover:underline">Retour</a>
     </div>
 
     <!-- Content -->
-    <div *ngIf="demand && !loading" class="space-y-6">
+    <div *ngIf="demand && !loading" class="space-y-2">
       
       <!-- Headline Card -->
       <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
