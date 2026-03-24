@@ -12,7 +12,7 @@ RUN npm install -g @angular/cli@20.3.0
 ENV CHOKIDAR_USEPOLLING=true
 
 # The actual source code and node_modules are mounted via docker-compose.
-# Reinstall dependencies if the mounted node_modules is missing Angular builders.
-# --host 0.0.0.0 ensures the server is accessible from outside the container
-# --poll 2000 ensures hot-reloading works even if Docker file events are dropped
-CMD ["sh", "-lc", "if [ ! -f node_modules/@angular/build/package.json ]; then rm -rf node_modules; npm ci; fi; npm run start -- --host 0.0.0.0 --poll 2000"]
+# Reinstall dependencies only when Angular build deps are missing.
+# --host 0.0.0.0 ensures the server is accessible from outside the container.
+# --poll 2000 keeps file watching reliable on Docker Desktop.
+CMD ["sh", "-lc", "if [ ! -f node_modules/@angular/build/package.json ]; then npm ci; fi; npm run start -- --host 0.0.0.0 --poll 2000"]

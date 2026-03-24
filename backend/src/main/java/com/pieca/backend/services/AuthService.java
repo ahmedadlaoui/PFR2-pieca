@@ -82,9 +82,11 @@ public class AuthService {
                 .categories(categories);
 
         if (request.getLatitude() != null && request.getLongitude() != null) {
-            profileBuilder.location(
-                    GEOMETRY_FACTORY.createPoint(new Coordinate(request.getLongitude(), request.getLatitude()))
+            org.locationtech.jts.geom.Point location = GEOMETRY_FACTORY.createPoint(
+                new Coordinate(request.getLongitude(), request.getLatitude())
             );
+            location.setSRID(4326);
+            profileBuilder.location(location);
         }
 
         if (request.getActiveRadiusKm() != null) {

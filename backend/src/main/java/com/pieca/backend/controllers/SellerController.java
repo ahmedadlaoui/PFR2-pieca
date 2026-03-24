@@ -1,9 +1,11 @@
 package com.pieca.backend.controllers;
 
 import com.pieca.backend.domain.dtos.SellerNearbyResponse;
+import com.pieca.backend.security.CustomUserDetails;
 import com.pieca.backend.services.SellerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -30,5 +32,11 @@ public class SellerController {
             @RequestParam double lat,
             @RequestParam double lon) {
         return ResponseEntity.ok(sellerService.getNearbySellerProfiles(lat, lon));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<SellerNearbyResponse> getCurrentSeller(
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        return ResponseEntity.ok(sellerService.getCurrentSellerProfile(userDetails.getUser().getId()));
     }
 }

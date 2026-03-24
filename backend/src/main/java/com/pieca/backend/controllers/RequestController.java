@@ -80,4 +80,18 @@ public class RequestController {
                 .contentType(mediaType)
                 .body(file);
     }
+
+    @GetMapping("/nearby")
+    public ResponseEntity<Page<BuyerRequestItemResponse>> getNearbyRequests(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            Authentication authentication
+    ) {
+        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getName())) {
+            throw new InvalidCredentialsException("Authentification requise pour voir les demandes à proximité");
+        }
+
+        Page<BuyerRequestItemResponse> response = requestService.getNearbyRequests(authentication.getName(), page, size);
+        return ResponseEntity.ok(response);
+    }
 }

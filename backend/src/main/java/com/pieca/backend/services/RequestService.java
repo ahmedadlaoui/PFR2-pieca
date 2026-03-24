@@ -5,6 +5,7 @@ import com.pieca.backend.domain.dtos.CreateRequestRequest;
 import com.pieca.backend.domain.dtos.CreateRequestResponse;
 import com.pieca.backend.domain.entities.Category;
 import com.pieca.backend.domain.entities.Request;
+import com.pieca.backend.domain.entities.SellerProfile;
 import com.pieca.backend.domain.entities.User;
 import com.pieca.backend.domain.enums.RequestStatus;
 import com.pieca.backend.domain.enums.Role;
@@ -14,6 +15,7 @@ import com.pieca.backend.exceptions.ResourceNotFoundException;
 import com.pieca.backend.exceptions.UnauthorizedActionException;
 import com.pieca.backend.repositories.CategoryRepository;
 import com.pieca.backend.repositories.RequestRepository;
+import com.pieca.backend.repositories.SellerProfileRepository;
 import com.pieca.backend.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.locationtech.jts.geom.Coordinate;
@@ -35,7 +37,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -48,6 +52,7 @@ public class RequestService {
     private final RequestRepository requestRepository;
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
+    private final SellerProfileRepository sellerProfileRepository;
 
     @Transactional
     public CreateRequestResponse createBuyerRequest(CreateRequestRequest payload, String buyerEmail, MultipartFile photo) {
@@ -207,6 +212,43 @@ public class RequestService {
                 } catch (MalformedURLException e) {
                         throw new FileProcessingException("Impossible de charger la photo demandee");
                 }
+        }
+
+        @Transactional(readOnly = true)
+        public Page<BuyerRequestItemResponse> getNearbyRequests(String sellerEmail, int page, int size) {
+                if (sellerEmail == null || sellerEmail.isBlank()) {
+                        throw new UnauthorizedActionException("Authentification requise");
+                }
+
+                User seller = userRepository.findByEmail(sellerEmail)
+                                .orElseThrow(() -> new ResourceNotFoundException("Vendeur introuvable"));
+
+                if (seller.getRole() != Role.SELLER) {
+                        throw new UnauthorizedActionException("Seuls les vendeurs peuvent consulter les demandes a proximite");
+                }
+
+                SellerProfile profile = sellerProfileRepository.findByUserId(seller.getId())
+                                .orElseThrow(() -> new ResourceNotFoundException("Profil vendeur introuvable"));
+
+                if (profile.getLocation() == null || profile.getCategories() == null || profile.getCategories().isEmpty()) {
+                        return Page.empty(PageRequest.of(Math.max(page, 0), Math.max(size, 1)));
+                }
+
+                double latitude = profile.getLocation().getY();
+                double longitude = profile.getLocation().getX();
+                double radiusKm = profile.getActiveRadiusKm() != null ? profile.getActiveRadiusKm() : 5.0;
+
+                List<Long> categoryIds = profile.getCategories().stream()
+                                .map(Category::getId)
+                                .collect(Collectors.toList());
+
+                Pageable pageable = PageRequest.of(Math.max(page, 0), Math.max(size, 1));
+                
+                Page<Request> requests = requestRepository.findNearbyMatchingRequests(
+                                longitude, latitude, radiusKm, categoryIds, pageable
+                );
+
+                return requests.map(this::toBuyerItem);
         }
 
         private BuyerRequestItemResponse toBuyerItem(Request request) {

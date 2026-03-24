@@ -3,6 +3,7 @@ package com.pieca.backend.services;
 import com.pieca.backend.domain.dtos.SellerNearbyResponse;
 import com.pieca.backend.domain.entities.Category;
 import com.pieca.backend.domain.entities.SellerProfile;
+import com.pieca.backend.exceptions.ResourceNotFoundException;
 import com.pieca.backend.repositories.SellerProfileRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +29,13 @@ public class SellerService {
         List<SellerProfile> profiles = sellerProfileRepository.findSellersWithinRadius(lat, lon);
         log.info("Found {} sellers near the requested location", profiles.size());
         return profiles.stream().map(this::toResponse).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public SellerNearbyResponse getCurrentSellerProfile(Long userId) {
+        SellerProfile sp = sellerProfileRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Profil vendeur introuvable"));
+        return toResponse(sp);
     }
 
     private SellerNearbyResponse toResponse(SellerProfile sp) {

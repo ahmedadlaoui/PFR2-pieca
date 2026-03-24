@@ -7,9 +7,12 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface SellerProfileRepository extends JpaRepository<SellerProfile, Long> {
+
+    Optional<SellerProfile> findByUserId(Long userId);
 
     /**
      * Finds all sellers whose service circle covers the given buyer location.
