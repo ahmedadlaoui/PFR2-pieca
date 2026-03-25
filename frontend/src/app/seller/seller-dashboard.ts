@@ -23,25 +23,7 @@ interface NearbyDemand {
   standalone: true,
   imports: [CommonModule],
   templateUrl: './seller-dashboard.html',
-  styles: [
-    `
-      .pages-container {
-        overflow: hidden;
-        width: 100%;
-      }
-
-      .pages-track {
-        display: flex;
-        width: 300%;
-        transition: transform 360ms ease;
-      }
-
-      .page {
-        width: 33.333333%;
-        flex: 0 0 33.333333%;
-      }
-    `
-  ]
+  styles: []
 })
 export class SellerDashboard implements OnInit {
   demands: NearbyDemand[] = [];
@@ -72,10 +54,6 @@ export class SellerDashboard implements OnInit {
   ngOnInit(): void {
     this.fetchSellerProfile(false);
     this.fetchAcceptedDemands();
-  }
-
-  get trackTransform(): string {
-    return `translateX(-${this.activePage * 33.333333}%)`;
   }
 
   showToast(message: string): void {
@@ -154,6 +132,10 @@ export class SellerDashboard implements OnInit {
     this.selectedDemand = null;
   }
 
+  closeOverlay(): void {
+    this.activePage = 0;
+  }
+
   private updateMapUrl(): void {
     if (this.currentLat === null || this.currentLon === null) {
       this.mapUrl = undefined;
@@ -179,11 +161,11 @@ export class SellerDashboard implements OnInit {
       .subscribe({
         next: (res) => {
           this.demands = res.content || [];
-          // Add a small artificial delay for the loading animation to be visible
+          // Small delay so the spinner is visible but responsive
           setTimeout(() => {
             this.isLoading = false;
             this.activePage = 1;
-          }, 800);
+          }, 250);
         },
         error: (err) => {
           console.error('Error fetching nearby requests', err);
