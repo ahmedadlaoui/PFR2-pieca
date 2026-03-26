@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { RequestService, SellerDashboardStats } from '../core/services/request.service';
 
 interface NearbyDemand {
   id: number;
@@ -33,6 +34,8 @@ export class SellerDashboard implements OnInit {
   isLoading = false;
   isAccepting = false;
   isLoadingAccepted = false;
+  isLoadingStats = false;
+  stats: SellerDashboardStats | null = null;
   
   mapUrl?: SafeResourceUrl;
   hasSellerPosition = false;
@@ -49,11 +52,20 @@ export class SellerDashboard implements OnInit {
   private profileFetchRetries = 0;
   private readonly maxProfileFetchRetries = 5;
 
-  constructor(private http: HttpClient, private sanitizer: DomSanitizer) {}
+  constructor(private http: HttpClient, private sanitizer: DomSanitizer, private requestService: RequestService) {}
 
   ngOnInit(): void {
     this.fetchSellerProfile(false);
     this.fetchAcceptedDemands();
+    this.fetchStats();
+  }
+
+  fetchStats(): void {
+    this.isLoadingStats = true;
+    this.requestService.getSellerStats().subscribe({
+      next: (s) => { this.stats = s; this.isLoadingStats = false; },
+      error: () => { this.isLoadingStats = false; }
+    });
   }
 
   showToast(message: string): void {
@@ -199,7 +211,8 @@ export class SellerDashboard implements OnInit {
         this.acceptedDemandIds.add(acceptedId);
         // Refresh accepted demands in background
         this.fetchAcceptedDemands();
-        this.showToast('Demande acceptée avec succès (' + acceptedId + '). Consultez vos Demandes en attente.');
+        this.fetchStats();
+        this.showToast('Demande acceptee avec succes (' + acceptedId + '). Consultez vos Demandes en attente.');
       },
       error: (err) => {
         console.error('Erreur accept', err);

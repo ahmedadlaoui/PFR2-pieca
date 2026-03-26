@@ -3,6 +3,9 @@ package com.pieca.backend.controllers;
 import com.pieca.backend.domain.dtos.BuyerRequestItemResponse;
 import com.pieca.backend.domain.dtos.CreateRequestRequest;
 import com.pieca.backend.domain.dtos.CreateRequestResponse;
+import com.pieca.backend.domain.dtos.SellerDashboardStatsResponse;
+import com.pieca.backend.domain.dtos.SellerRequestItemResponse;
+import com.pieca.backend.domain.enums.OfferStatus;
 import com.pieca.backend.domain.enums.RequestStatus;
 import com.pieca.backend.exceptions.InvalidCredentialsException;
 import com.pieca.backend.services.RequestService;
@@ -118,6 +121,41 @@ public class RequestController {
         }
         Page<BuyerRequestItemResponse> response = requestService.getAcceptedRequests(authentication.getName(), page, size);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/seller/offers")
+    public ResponseEntity<Page<SellerRequestItemResponse>> getSellerOffers(
+            @RequestParam(required = false) OfferStatus offerStatus,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            Authentication authentication
+    ) {
+        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getName())) {
+            throw new InvalidCredentialsException("Authentification requise");
+        }
+        Page<SellerRequestItemResponse> response = requestService.getSellerOffers(authentication.getName(), offerStatus, page, size);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/seller/stats")
+    public ResponseEntity<SellerDashboardStatsResponse> getSellerStats(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getName())) {
+            throw new InvalidCredentialsException("Authentification requise");
+        }
+        SellerDashboardStatsResponse response = requestService.getSellerStats(authentication.getName());
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/{id}/cancel")
+    public ResponseEntity<Void> cancelOffer(
+            @PathVariable Long id,
+            Authentication authentication
+    ) {
+        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getName())) {
+            throw new InvalidCredentialsException("Authentification requise pour annuler cette offre");
+        }
+        requestService.cancelOffer(id, authentication.getName());
+        return ResponseEntity.ok().build();
     }
 
 }

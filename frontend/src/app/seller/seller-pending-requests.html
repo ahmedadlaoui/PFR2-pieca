@@ -1,28 +1,162 @@
-<div class="py-2 px-2 w-full flex flex-col gap-2">
-  <div class="bg-white border border-gray-100 rounded-xl p-5 md:p-6 shadow-sm">
-    <p class="text-[11px] uppercase tracking-[0.2em] font-black text-[#255362]">Demandes sauvegardees</p>
-    <h1 class="text-2xl font-black text-gray-900 mt-1">Demandes avec offre en attente</h1>
-    <p class="text-sm text-gray-500 mt-1.5 font-medium">Liste simple des demandes du vendeur dont l'offre est encore en attente.</p>
+<div class="py-2 px-2 w-full flex flex-col gap-2 relative">
+
+  <div *ngIf="toastMessage" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-[#255362] text-white shadow-2xl px-6 py-3.5 rounded-full flex items-center gap-3 z-[100] border border-[#1d4450]">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5 text-emerald-400">
+      <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clip-rule="evenodd" />
+    </svg>
+    <span class="text-sm font-bold tracking-wide">{{toastMessage}}</span>
   </div>
 
-  <div class="bg-white border border-gray-100 rounded-xl p-5 md:p-6 shadow-sm">
-    <div class="space-y-3" *ngIf="requests.length > 0">
-      <article *ngFor="let request of requests" class="rounded-lg border border-gray-100 bg-gray-50 p-4">
-        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-          <div>
-            <p class="text-sm font-black text-gray-900">#{{ request.id }} - {{ request.title }}</p>
-            <p class="text-xs text-gray-500 mt-1">{{ request.city }} • Creee le {{ request.createdAt }}</p>
-            <p class="text-sm text-gray-700 mt-2">{{ request.note }}</p>
-          </div>
-          <span class="inline-flex items-center h-fit px-2.5 py-1 rounded text-[11px] font-bold uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200">
-            {{ request.offerStatus }}
-          </span>
-        </div>
-      </article>
+  <div class="bg-white border border-gray-100 rounded-xl p-5 md:p-6 shadow-sm flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+    <div>
+      <p class="text-[11px] uppercase tracking-[0.2em] font-black text-[#255362]">Mes demandes</p>
+      <h1 class="text-2xl font-black text-gray-900 mt-1">Demandes acceptees</h1>
+      <p class="text-sm text-gray-500 mt-1.5 font-medium">Toutes les demandes auxquelles vous avez repondu, classees par date.</p>
+    </div>
+    <div class="flex items-center gap-2">
+      <select [(ngModel)]="statusFilter" (ngModelChange)="onFilterChange()" class="text-sm font-semibold border border-gray-200 rounded-lg px-3 py-2 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#255362]/30 focus:border-[#255362]">
+        <option *ngFor="let opt of statusOptions" [value]="opt.value">{{opt.label}}</option>
+      </select>
+      <button (click)="loadOffers()" class="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors text-gray-500 hover:text-gray-900" title="Rafraichir">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="flex flex-col lg:flex-row gap-2 flex-1 min-h-0">
+
+    <div class="bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden flex flex-col" [ngClass]="selectedRequest ? 'lg:w-7/12' : 'w-full'">
+      <div class="p-4 md:px-6 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+        <p class="text-sm font-bold text-gray-900">Resultats: {{ totalElements }}</p>
+        <p class="text-xs text-gray-400 font-semibold" *ngIf="totalPages > 1">Page {{ currentPage + 1 }} / {{ totalPages }}</p>
+      </div>
+
+      <div *ngIf="isLoading" class="flex items-center justify-center py-16">
+        <svg class="animate-spin h-7 w-7 text-[#255362]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+      </div>
+
+      <div *ngIf="errorMessage && !isLoading" class="p-6 text-center text-sm font-semibold text-red-600">{{ errorMessage }}</div>
+
+      <div class="overflow-x-auto flex-1" *ngIf="!isLoading && !errorMessage">
+        <table class="min-w-full">
+          <thead class="bg-white border-b border-gray-100">
+            <tr>
+              <th class="px-4 md:px-6 py-3 text-left text-[11px] uppercase tracking-widest font-black text-gray-400">ID</th>
+              <th class="px-4 md:px-6 py-3 text-left text-[11px] uppercase tracking-widest font-black text-gray-400">Titre</th>
+              <th class="px-4 md:px-6 py-3 text-left text-[11px] uppercase tracking-widest font-black text-gray-400 hidden sm:table-cell">Categorie</th>
+              <th class="px-4 md:px-6 py-3 text-left text-[11px] uppercase tracking-widest font-black text-gray-400">Statut</th>
+              <th class="px-4 md:px-6 py-3 text-left text-[11px] uppercase tracking-widest font-black text-gray-400">Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let req of requests"
+                (click)="selectRequest(req)"
+                class="border-b border-gray-50 last:border-b-0 hover:bg-sky-50/60 transition-colors cursor-pointer"
+                [ngClass]="{'bg-sky-50 border-l-4 border-l-teal-800': selectedRequest?.offerId === req.offerId}">
+              <td class="px-4 md:px-6 py-3.5 text-sm font-bold text-gray-600">#{{ req.requestId }}</td>
+              <td class="px-4 md:px-6 py-3.5">
+                <p class="text-sm font-bold text-gray-900 truncate max-w-[200px]">{{ req.title }}</p>
+                <p class="text-xs text-gray-500 mt-0.5 truncate max-w-[200px]">{{ req.buyerFirstName }} {{ req.buyerLastName }}</p>
+              </td>
+              <td class="px-4 md:px-6 py-3.5 hidden sm:table-cell">
+                <span class="text-xs font-semibold text-gray-600">{{ req.categoryName || '-' }}</span>
+              </td>
+              <td class="px-4 md:px-6 py-3.5">
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold uppercase tracking-wider border" [ngClass]="offerStatusClasses(req.offerStatus)">
+                  {{ offerStatusLabel(req.offerStatus) }}
+                </span>
+              </td>
+              <td class="px-4 md:px-6 py-3.5">
+                <p class="text-xs font-semibold text-gray-700">{{ req.createdAt | date:'dd/MM/yyyy' }}</p>
+                <p class="text-[11px] text-gray-400">{{ req.createdAt | date:'HH:mm' }}</p>
+              </td>
+            </tr>
+            <tr *ngIf="requests.length === 0">
+              <td colspan="5" class="px-4 md:px-6 py-12 text-center">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 text-gray-300 mx-auto mb-3"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6M7 4h10a2 2 0 012 2v12a2 2 0 01-2 2H7a2 2 0 01-2-2V6a2 2 0 012-2z"/></svg>
+                <p class="text-sm font-bold text-gray-500">Aucune demande trouvee.</p>
+                <p class="text-xs text-gray-400 mt-1">Modifiez le filtre ou acceptez des demandes depuis la carte.</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div *ngIf="totalPages > 1 && !isLoading" class="p-3 border-t border-gray-100 flex items-center justify-center gap-1">
+        <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 0" class="px-2.5 py-1.5 rounded text-xs font-bold text-gray-500 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg>
+        </button>
+        <button *ngFor="let p of pageNumbers" (click)="goToPage(p)"
+                class="px-3 py-1.5 rounded text-xs font-bold transition-colors"
+                [ngClass]="p === currentPage ? 'bg-[#255362] text-white' : 'text-gray-600 hover:bg-gray-100'">
+          {{ p + 1 }}
+        </button>
+        <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage >= totalPages - 1" class="px-2.5 py-1.5 rounded text-xs font-bold text-gray-500 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>
+        </button>
+      </div>
     </div>
 
-    <div *ngIf="requests.length === 0" class="rounded-lg border border-dashed border-gray-200 p-6 text-center">
-      <p class="text-sm font-semibold text-gray-500">Aucune demande avec offre en attente pour le moment.</p>
+    <div *ngIf="selectedRequest" class="bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden flex flex-col lg:w-5/12">
+      <div class="p-4 md:px-6 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+        <p class="text-sm font-bold text-gray-900">Details de la demande</p>
+        <button (click)="closeDetail()" class="p-1.5 rounded-lg hover:bg-gray-200 transition-colors text-gray-400 hover:text-gray-700">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="p-4 md:p-6 flex flex-col gap-4 overflow-y-auto flex-1">
+        <div *ngIf="selectedRequest.imageUrl" class="w-full h-40 rounded-xl overflow-hidden bg-gray-50 border border-gray-100">
+          <img [src]="selectedRequest.imageUrl" alt="Photo demande" class="w-full h-full object-cover" />
+        </div>
+
+        <div>
+          <h3 class="text-lg font-black text-gray-900">{{ selectedRequest.title }}</h3>
+          <p class="text-sm text-gray-500 mt-1" *ngIf="selectedRequest.description">{{ selectedRequest.description }}</p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div class="bg-gray-50 rounded-lg p-3">
+            <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-0.5">Categorie</p>
+            <p class="text-sm font-bold text-gray-900">{{ selectedRequest.categoryName || '-' }}</p>
+          </div>
+          <div class="bg-gray-50 rounded-lg p-3">
+            <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-0.5">Client</p>
+            <p class="text-sm font-bold text-gray-900">{{ selectedRequest.buyerFirstName }} {{ selectedRequest.buyerLastName }}</p>
+          </div>
+          <div class="bg-gray-50 rounded-lg p-3">
+            <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-0.5">Statut offre</p>
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold uppercase tracking-wider border" [ngClass]="offerStatusClasses(selectedRequest.offerStatus)">
+              {{ offerStatusLabel(selectedRequest.offerStatus) }}
+            </span>
+          </div>
+          <div class="bg-gray-50 rounded-lg p-3">
+            <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-0.5">Date demande</p>
+            <p class="text-sm font-bold text-gray-900">{{ selectedRequest.createdAt | date:'dd/MM/yyyy HH:mm' }}</p>
+          </div>
+          <div class="bg-gray-50 rounded-lg p-3">
+            <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-0.5">Date offre</p>
+            <p class="text-sm font-bold text-gray-900">{{ selectedRequest.offerCreatedAt | date:'dd/MM/yyyy HH:mm' }}</p>
+          </div>
+          <div class="bg-gray-50 rounded-lg p-3">
+            <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-0.5">Demande #</p>
+            <p class="text-sm font-bold text-gray-900">{{ selectedRequest.requestId }}</p>
+          </div>
+        </div>
+
+        <div class="mt-auto pt-3 border-t border-gray-100" *ngIf="selectedRequest.offerStatus === 'PENDING'">
+          <button (click)="cancelOffer(selectedRequest)" [disabled]="isCancelling"
+                  class="w-full flex items-center justify-center gap-2 bg-red-50 border border-red-200 text-red-700 text-[11px] font-black uppercase tracking-widest py-3 rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+            <svg *ngIf="!isCancelling" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            <svg *ngIf="isCancelling" class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+            {{ isCancelling ? 'Annulation...' : 'Annuler cette offre' }}
+          </button>
+        </div>
+      </div>
     </div>
+
   </div>
 </div>

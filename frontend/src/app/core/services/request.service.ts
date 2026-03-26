@@ -65,6 +65,31 @@ export interface PagedResponse<T> {
   last: boolean;
 }
 
+export interface SellerRequestItem {
+  requestId: number;
+  offerId: number;
+  title: string;
+  description: string;
+  categoryName: string;
+  requestStatus: string;
+  offerStatus: string;
+  offerPrice: number;
+  buyerFirstName: string;
+  buyerLastName: string;
+  imageUrl: string | null;
+  createdAt: string;
+  offerCreatedAt: string;
+}
+
+export interface SellerDashboardStats {
+  totalOffers: number;
+  pendingOffers: number;
+  acceptedOffers: number;
+  rejectedOffers: number;
+  cancelledOffers: number;
+  totalRevenue: number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class RequestService {
   private readonly API = '/api/v1/requests';
@@ -88,23 +113,31 @@ export class RequestService {
   }
 
   getMyDemands(status: string | null, page = 0, size = 10): Observable<PagedResponse<BuyerDemandItem>> {
-    const params: Record<string, string | number> = {
-      page,
-      size
-    };
-
+    const params: Record<string, string | number> = { page, size };
     if (status) {
       params['status'] = status;
     }
-
-    return this.http.get<PagedResponse<BuyerDemandItem>>(`${this.API}/me`, {
-      withCredentials: true,
-      params
-    });
+    return this.http.get<PagedResponse<BuyerDemandItem>>(`${this.API}/me`, { withCredentials: true, params });
   }
 
   getDemandDetails(id: number): Observable<BuyerDemandDetails> {
     return this.http.get<BuyerDemandDetails>(`${this.API}/${id}`, { withCredentials: true });
+  }
+
+  getSellerOffers(offerStatus: string | null, page = 0, size = 20): Observable<PagedResponse<SellerRequestItem>> {
+    const params: Record<string, string | number> = { page, size };
+    if (offerStatus) {
+      params['offerStatus'] = offerStatus;
+    }
+    return this.http.get<PagedResponse<SellerRequestItem>>(`${this.API}/seller/offers`, { params });
+  }
+
+  getSellerStats(): Observable<SellerDashboardStats> {
+    return this.http.get<SellerDashboardStats>(`${this.API}/seller/stats`);
+  }
+
+  cancelOffer(requestId: number): Observable<void> {
+    return this.http.post<void>(`${this.API}/${requestId}/cancel`, {});
   }
 }
 

@@ -3,10 +3,14 @@ package com.pieca.backend.services;
 import com.pieca.backend.domain.dtos.BuyerRequestItemResponse;
 import com.pieca.backend.domain.dtos.CreateRequestRequest;
 import com.pieca.backend.domain.dtos.CreateRequestResponse;
+import com.pieca.backend.domain.dtos.SellerDashboardStatsResponse;
+import com.pieca.backend.domain.dtos.SellerRequestItemResponse;
 import com.pieca.backend.domain.entities.Category;
+import com.pieca.backend.domain.entities.Offer;
 import com.pieca.backend.domain.entities.Request;
 import com.pieca.backend.domain.entities.SellerProfile;
 import com.pieca.backend.domain.entities.User;
+import com.pieca.backend.domain.enums.OfferStatus;
 import com.pieca.backend.domain.enums.RequestStatus;
 import com.pieca.backend.domain.enums.Role;
 import com.pieca.backend.exceptions.BusinessViolationException;
@@ -32,6 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -381,7 +386,6 @@ public class RequestService {
                 Pageable pageable = PageRequest.of(Math.max(page, 0), Math.max(size, 1));
                 Page<com.pieca.backend.domain.entities.Offer> offers = offerRepository.findBySellerIdOrderByCreatedAtDesc(seller.getId(), pageable);
 
-                // Use the seller profile to get location and compute distance if available
                 SellerProfile profile = sellerProfileRepository.findByUserId(seller.getId()).orElse(null);
                 Double latitude = null;
                 Double longitude = null;
@@ -396,5 +400,97 @@ public class RequestService {
 
                 return offers.map(offer -> toBuyerItem(offer.getRequest(), sellerLat, sellerLon));
         }
-}
 
+        @Transactional(readOnly = true)
+        public Page<SellerRequestItemResponse> getSellerOffers(String sellerEmail, OfferStatus offerStatus, int page, int size) {
+                User seller = userRepository.findByEmail(sellerEmail)
+                                .orElseThrow(() -> new ResourceNotFoundException("Vendeur introuvable"));
+
+                if (seller.getRole() != Role.SELLER) {
+                        throw new UnauthorizedActionException("Seuls les vendeurs peuvent consulter leurs offres");
+                }
+
+                Pageable pageable = PageRequest.of(Math.max(page, 0), Math.max(size, 1));
+                Page<Offer> offers = offerStatus == null
+                                ? offerRepository.findBySellerIdOrderByCreatedAtDesc(seller.getId(), pageable)
+                                : offerRepository.findBySellerIdAndStatusOrderByCreatedAtDesc(seller.getId(), offerStatus, pageable);
+
+                return offers.map(this::toSellerItem);
+        }
+
+        @Transactional(readOnly = true)
+        public SellerDashboardStatsResponse getSellerStats(String sellerEmail) {
+                User seller = userRepository.findByEmail(sellerEmail)
+                                .orElseThrow(() -> new ResourceNotFoundException("Vendeur introuvable"));
+
+                if (seller.getRole() != Role.SELLER) {
+                        throw new UnauthorizedActionException("Seuls les vendeurs peuvent consulter leurs statistiques");
+                }
+
+                Long sellerId = seller.getId();
+                long total = offerRepository.countBySellerId(sellerId);
+                long pending = offerRepository.countBySellerIdAndStatus(sellerId, OfferStatus.PENDING);
+                long accepted = offerRepository.countBySellerIdAndStatus(sellerId, OfferStatus.ACCEPTED);
+                long rejected = offerRepository.countBySellerIdAndStatus(sellerId, OfferStatus.REJECTED);
+                long cancelled = offerRepository.countBySellerIdAndStatus(sellerId, OfferStatus.CANCELLED);
+                BigDecimal revenue = offerRepository.sumPriceBySellerIdAndStatus(sellerId, OfferStatus.ACCEPTED);
+
+                return SellerDashboardStatsResponse.builder()
+                                .totalOffers(total)
+                                .pendingOffers(pending)
+                                .acceptedOffers(accepted)
+                                .rejectedOffers(rejected)
+                                .cancelledOffers(cancelled)
+                                .totalRevenue(revenue != null ? revenue : BigDecimal.ZERO)
+                                .build();
+        }
+
+        @Transactional
+        public void cancelOffer(Long requestId, String sellerEmail) {
+                User seller = userRepository.findByEmail(sellerEmail)
+                                .orElseThrow(() -> new ResourceNotFoundException("Vendeur introuvable"));
+
+                if (seller.getRole() != Role.SELLER) {
+                        throw new UnauthorizedActionException("Seuls les vendeurs peuvent annuler leurs offres");
+                }
+
+                Offer offer = offerRepository.findByRequestIdAndSellerId(requestId, seller.getId())
+                                .orElseThrow(() -> new ResourceNotFoundException("Offre introuvable pour cette demande"));
+
+                if (offer.getStatus() != OfferStatus.PENDING) {
+                        throw new BusinessViolationException("Seules les offres en attente peuvent etre annulees");
+                }
+
+                offer.setStatus(OfferStatus.CANCELLED);
+                offerRepository.save(offer);
+        }
+
+        private SellerRequestItemResponse toSellerItem(Offer offer) {
+                Request request = offer.getRequest();
+                String title = request.getDescription();
+                String details = "";
+                if (request.getDescription() != null) {
+                        int separatorIndex = request.getDescription().indexOf(" | ");
+                        if (separatorIndex >= 0) {
+                                title = request.getDescription().substring(0, separatorIndex);
+                                details = request.getDescription().substring(separatorIndex + 3);
+                        }
+                }
+
+                return SellerRequestItemResponse.builder()
+                                .requestId(request.getId())
+                                .offerId(offer.getId())
+                                .title(title)
+                                .description(details)
+                                .categoryName(request.getCategory() != null ? request.getCategory().getName() : null)
+                                .requestStatus(request.getStatus())
+                                .offerStatus(offer.getStatus())
+                                .offerPrice(offer.getPrice())
+                                .buyerFirstName(request.getBuyer() != null ? request.getBuyer().getFirstName() : null)
+                                .buyerLastName(request.getBuyer() != null ? request.getBuyer().getLastName() : null)
+                                .imageUrl(request.getImageUrl())
+                                .createdAt(request.getCreatedAt())
+                                .offerCreatedAt(offer.getCreatedAt())
+                                .build();
+        }
+}

@@ -1,11 +1,6 @@
 # =============================================
 # PFR2-pieca — Docker Compose Configuration (DEV)
 # =============================================
-# Usage:
-#   docker compose up -d          → Start all services
-#   docker compose down           → Stop all services
-#   docker compose logs -f        → Follow logs
-#   docker compose logs -f backend → Follow backend logs specifically
 
 services:
   # ─── PostgreSQL Database ───────────────────
@@ -37,18 +32,21 @@ services:
     container_name: pieca-backend
     restart: unless-stopped
     environment:
+      SPRING_PROFILES_ACTIVE: docker
       SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
       SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
       SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-600000}
       SERVER_PORT: ${SERVER_PORT:-8080}
       CORS_ALLOWED_ORIGIN: ${CORS_ALLOWED_ORIGIN:-http://localhost}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_DEVTOOLS_ADD_PROPERTIES: "false"
+      SPRING_LIQUIBASE_ENABLED: "false"
     ports:
       - "${SERVER_PORT:-8080}:8080"
     volumes:
-      # Mount the local backend directory to /app
       - ./backend:/app
-      # Cache Maven dependencies in a named volume so they persist across restarts
-      # but don't clash with the host machine's ~/.m2
       - maven_cache:/root/.m2
     depends_on:
       postgres:
@@ -64,12 +62,9 @@ services:
     container_name: pieca-frontend
     restart: unless-stopped
     ports:
-      # ng serve runs on port 4200 by default, so we map host:80 to container:4200
       - "${FRONTEND_PORT:-80}:4200"
     volumes:
-      # Mount the local frontend directory to /app
       - ./frontend:/app
-      # Prevent the host OS node_modules from overriding the container's node_modules
       - /app/node_modules
     depends_on:
       - backend

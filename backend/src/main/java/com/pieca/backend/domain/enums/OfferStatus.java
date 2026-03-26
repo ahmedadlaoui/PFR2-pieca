@@ -1,5 +1,5 @@
 package com.pieca.backend.domain.enums;
 
 public enum OfferStatus {
-    PENDING, ACCEPTED, REJECTED
+    PENDING, ACCEPTED, REJECTED, CANCELLED
 }
