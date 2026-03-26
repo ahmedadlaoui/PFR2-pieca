@@ -21,6 +21,8 @@ public class SellerRequestItemResponse {
     private BigDecimal offerPrice;
     private String buyerFirstName;
     private String buyerLastName;
+    private String buyerPhone;
+    private String buyerEmail;
     private String imageUrl;
     private LocalDateTime createdAt;
     private LocalDateTime offerCreatedAt;

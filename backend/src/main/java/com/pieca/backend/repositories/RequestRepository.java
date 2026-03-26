@@ -21,7 +21,7 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
 			       "WHERE ST_DWithin(r.location::geography, ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326)::geography, :radiusKm * 1000) " +
 			       "AND r.category_id IN (:categoryIds) " +
 			       "AND r.status = 'PENDING' " +
-			       "ORDER BY ST_Distance(r.location::geography, ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326)::geography)", 
+			       "ORDER BY r.created_at DESC", 
 	       nativeQuery = true)
 	Page<Request> findNearbyMatchingRequests(@Param("longitude") double longitude, 
 	                                         @Param("latitude") double latitude, 

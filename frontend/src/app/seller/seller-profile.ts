@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
 import { AuthService, CurrentUser } from '../core/services/auth.service';
+import { RequestService } from '../core/services/request.service';
 
 type SellerProfileData = {
   firstName: string;
@@ -24,12 +25,17 @@ type SellerProfileData = {
 })
 export class SellerProfile implements OnInit, OnDestroy {
   private readonly authService = inject(AuthService);
+  private readonly requestService = inject(RequestService);
   private readonly fb = inject(FormBuilder);
   private readonly destroy$ = new Subject<void>();
 
   isSaving = false;
   saveSuccess = '';
   saveError = '';
+
+  storeImages: string[] = [];
+  storeImagesUploading = false;
+  storeImagesError = '';
 
   form = this.fb.nonNullable.group({
     firstName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(80)]],
@@ -169,5 +175,42 @@ export class SellerProfile implements OnInit, OnDestroy {
 
   private getStorageKey(email: string): string {
     return `seller_profile_${email || 'unknown'}`;
+  }
+
+  onStoreImagesSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+
+    const files = Array.from(input.files);
+    if (this.storeImages.length + files.length > 6) {
+      this.storeImagesError = 'Maximum 6 images autorisees.';
+      return;
+    }
+
+    this.storeImagesUploading = true;
+    this.storeImagesError = '';
+    this.requestService.uploadStoreImages(files).subscribe({
+      next: (urls) => {
+        this.storeImages = urls;
+        this.storeImagesUploading = false;
+      },
+      error: (err) => {
+        this.storeImagesUploading = false;
+        this.storeImagesError = err.error?.message || 'Erreur lors de l\'upload des images.';
+      }
+    });
+
+    input.value = '';
+  }
+
+  removeStoreImage(imageUrl: string): void {
+    this.requestService.deleteStoreImage(imageUrl).subscribe({
+      next: () => {
+        this.storeImages = this.storeImages.filter(u => u !== imageUrl);
+      },
+      error: () => {
+        this.storeImagesError = 'Erreur lors de la suppression.';
+      }
+    });
   }
 }

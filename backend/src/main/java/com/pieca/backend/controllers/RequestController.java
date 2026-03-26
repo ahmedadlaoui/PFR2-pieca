@@ -101,12 +101,13 @@ public class RequestController {
     @PostMapping("/{id}/accept")
     public ResponseEntity<Void> acceptRequest(
             @PathVariable Long id,
+            @RequestParam(required = false) java.math.BigDecimal price,
             Authentication authentication
     ) {
         if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getName())) {
             throw new InvalidCredentialsException("Authentification requise pour accepter cette demande");
         }
-        requestService.acceptRequest(id, authentication.getName());
+        requestService.acceptRequest(id, authentication.getName(), price);
         return ResponseEntity.ok().build();
     }
 
@@ -144,6 +145,45 @@ public class RequestController {
         }
         SellerDashboardStatsResponse response = requestService.getSellerStats(authentication.getName());
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/buyer/offers")
+    public ResponseEntity<Page<com.pieca.backend.domain.dtos.BuyerOfferItemResponse>> getBuyerOffers(
+            @RequestParam(required = false) OfferStatus offerStatus,
+            @RequestParam(required = false) String period,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            Authentication authentication
+    ) {
+        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getName())) {
+            throw new InvalidCredentialsException("Authentification requise");
+        }
+        Page<com.pieca.backend.domain.dtos.BuyerOfferItemResponse> response = requestService.getBuyerOffers(authentication.getName(), offerStatus, period, page, size);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/offers/{offerId}/buyer-accept")
+    public ResponseEntity<Void> buyerAcceptOffer(
+            @PathVariable Long offerId,
+            Authentication authentication
+    ) {
+        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getName())) {
+            throw new InvalidCredentialsException("Authentification requise");
+        }
+        requestService.buyerAcceptOffer(offerId, authentication.getName());
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/offers/{offerId}/buyer-decline")
+    public ResponseEntity<Void> buyerDeclineOffer(
+            @PathVariable Long offerId,
+            Authentication authentication
+    ) {
+        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getName())) {
+            throw new InvalidCredentialsException("Authentification requise");
+        }
+        requestService.buyerDeclineOffer(offerId, authentication.getName());
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/{id}/cancel")

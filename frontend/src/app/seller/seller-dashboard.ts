@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { RequestService, SellerDashboardStats } from '../core/services/request.service';
+import { RequestService } from '../core/services/request.service';
 
 interface NearbyDemand {
   id: number;
@@ -22,7 +23,7 @@ interface NearbyDemand {
 @Component({
   selector: 'app-seller-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './seller-dashboard.html',
   styles: []
 })
@@ -34,8 +35,7 @@ export class SellerDashboard implements OnInit {
   isLoading = false;
   isAccepting = false;
   isLoadingAccepted = false;
-  isLoadingStats = false;
-  stats: SellerDashboardStats | null = null;
+  offerPrice: number | null = null;
   
   mapUrl?: SafeResourceUrl;
   hasSellerPosition = false;
@@ -57,15 +57,6 @@ export class SellerDashboard implements OnInit {
   ngOnInit(): void {
     this.fetchSellerProfile(false);
     this.fetchAcceptedDemands();
-    this.fetchStats();
-  }
-
-  fetchStats(): void {
-    this.isLoadingStats = true;
-    this.requestService.getSellerStats().subscribe({
-      next: (s) => { this.stats = s; this.isLoadingStats = false; },
-      error: () => { this.isLoadingStats = false; }
-    });
   }
 
   showToast(message: string): void {
@@ -205,22 +196,21 @@ export class SellerDashboard implements OnInit {
     const acceptedId = this.selectedDemand.id;
     this.isAccepting = true;
     
-    this.http.post(`/api/v1/requests/${acceptedId}/accept`, {}).subscribe({
+    const price = this.offerPrice && this.offerPrice > 0 ? this.offerPrice : undefined;
+    this.requestService.acceptDemand(acceptedId, price).subscribe({
       next: () => {
         this.isAccepting = false;
         this.acceptedDemandIds.add(acceptedId);
-        // Refresh accepted demands in background
+        this.offerPrice = null;
         this.fetchAcceptedDemands();
-        this.fetchStats();
-        this.showToast('Demande acceptee avec succes (' + acceptedId + '). Consultez vos Demandes en attente.');
+        this.showToast('Demande acceptee avec succes. Le client a ete notifie par email.');
       },
       error: (err) => {
         console.error('Erreur accept', err);
         this.isAccepting = false;
-        // Even if error (maybe already accepted), let's mark it
         if (err.status === 400 && err.error?.message?.includes('deja')) {
           this.acceptedDemandIds.add(acceptedId);
-          this.showToast('Vous avez déjà accepté cette demande.');
+          this.showToast('Vous avez deja accepte cette demande.');
         } else {
           this.showToast('Erreur lors de l\'acceptation de la demande.');
         }

@@ -29,6 +29,7 @@ export interface RegisterBuyerPayload {
   firstName: string;
   lastName: string;
   password: string;
+  phoneNumber?: string;
 }
 
 export interface RegisterSellerPayload {
@@ -36,6 +37,7 @@ export interface RegisterSellerPayload {
   firstName: string;
   lastName: string;
   password: string;
+  phoneNumber?: string;
   sellerType: string;
   categoryIds: number[];
   latitude?: number;

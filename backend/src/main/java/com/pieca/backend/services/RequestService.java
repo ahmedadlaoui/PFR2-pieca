@@ -48,6 +48,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@lombok.extern.slf4j.Slf4j
 public class RequestService {
 
     private static final GeometryFactory GEOMETRY_FACTORY = new GeometryFactory(new PrecisionModel(), 4326);
@@ -59,6 +60,7 @@ public class RequestService {
     private final UserRepository userRepository;
     private final SellerProfileRepository sellerProfileRepository;
     private final com.pieca.backend.repositories.OfferRepository offerRepository;
+    private final EmailService emailService;
 
     @Transactional
     public CreateRequestResponse createBuyerRequest(CreateRequestRequest payload, String buyerEmail, MultipartFile photo) {
@@ -172,9 +174,39 @@ public class RequestService {
         java.util.List<com.pieca.backend.domain.dtos.BuyerRequestDetailsResponse.OfferDto> offerDtos = new java.util.ArrayList<>();
         if (request.getOffers() != null) {
             for (com.pieca.backend.domain.entities.Offer offer : request.getOffers()) {
-                String sName = (offer.getSeller().getFirstName() != null ? offer.getSeller().getFirstName() : "") + " " + 
-                               (offer.getSeller().getLastName() != null ? offer.getSeller().getLastName() : "");
-                String storeName = null;
+                User sellerUser = offer.getSeller();
+                String sName = (sellerUser.getFirstName() != null ? sellerUser.getFirstName() : "") + " " + 
+                               (sellerUser.getLastName() != null ? sellerUser.getLastName() : "");
+
+                SellerProfile sp = sellerProfileRepository.findByUserId(sellerUser.getId()).orElse(null);
+
+                String sellerType = null;
+                java.util.List<String> sellerCategories = new java.util.ArrayList<>();
+                Double sellerLat = null;
+                Double sellerLon = null;
+                Integer sellerRadius = null;
+                java.util.List<String> storeImages = new java.util.ArrayList<>();
+
+                if (sp != null) {
+                    sellerType = sp.getSellerType() != null ? sp.getSellerType().name() : null;
+                    if (sp.getCategories() != null) {
+                        for (Category cat : sp.getCategories()) {
+                            sellerCategories.add(cat.getName());
+                        }
+                    }
+                    if (sp.getLocation() != null) {
+                        sellerLat = sp.getLocation().getY();
+                        sellerLon = sp.getLocation().getX();
+                    }
+                    sellerRadius = sp.getActiveRadiusKm();
+                    if (sp.getStoreImagesJson() != null && !sp.getStoreImagesJson().isBlank()) {
+                        try {
+                            storeImages = parseStoreImagesJson(sp.getStoreImagesJson());
+                        } catch (Exception e) {
+                            log.warn("Failed to parse store images JSON for seller {}: {}", sellerUser.getId(), e.getMessage());
+                        }
+                    }
+                }
 
                 offerDtos.add(com.pieca.backend.domain.dtos.BuyerRequestDetailsResponse.OfferDto.builder()
                         .id(offer.getId())
@@ -183,9 +215,15 @@ public class RequestService {
                         .status(offer.getStatus())
                         .createdAt(offer.getCreatedAt())
                         .sellerName(sName.trim())
-                        .sellerEmail(offer.getSeller().getEmail())
-                        .sellerPhone(offer.getSeller().getPhoneNumber())
-                        .storeName(storeName)
+                        .sellerEmail(sellerUser.getEmail())
+                        .sellerPhone(sellerUser.getPhoneNumber())
+                        .storeName(sName.trim())
+                        .sellerType(sellerType)
+                        .sellerCategories(sellerCategories)
+                        .sellerLatitude(sellerLat)
+                        .sellerLongitude(sellerLon)
+                        .sellerActiveRadiusKm(sellerRadius)
+                        .sellerStoreImages(storeImages)
                         .build());
             }
         }
@@ -300,6 +338,23 @@ public class RequestService {
                                 .build();
         }
 
+        private java.util.List<String> parseStoreImagesJson(String json) {
+                if (json == null || json.isBlank()) return new java.util.ArrayList<>();
+                String trimmed = json.trim();
+                if (!trimmed.startsWith("[")) return new java.util.ArrayList<>();
+                trimmed = trimmed.substring(1, trimmed.length() - 1);
+                if (trimmed.isBlank()) return new java.util.ArrayList<>();
+                java.util.List<String> result = new java.util.ArrayList<>();
+                for (String part : trimmed.split(",")) {
+                        String v = part.trim();
+                        if (v.startsWith("\"") && v.endsWith("\"")) {
+                                v = v.substring(1, v.length() - 1);
+                        }
+                        if (!v.isBlank()) result.add(v);
+                }
+                return result;
+        }
+
         private double haversineKm(double lat1, double lon1, double lat2, double lon2) {
                 double earthRadiusKm = 6371.0;
                 double dLat = Math.toRadians(lat2 - lat1);
@@ -348,7 +403,7 @@ public class RequestService {
         }
 
         @Transactional
-        public void acceptRequest(Long requestId, String sellerEmail) {
+        public void acceptRequest(Long requestId, String sellerEmail, BigDecimal price) {
                 User seller = userRepository.findByEmail(sellerEmail)
                                 .orElseThrow(() -> new ResourceNotFoundException("Vendeur introuvable"));
 
@@ -363,15 +418,23 @@ public class RequestService {
                         throw new BusinessViolationException("Vous avez deja accepte cette demande");
                 }
 
+                BigDecimal offerPrice = (price != null && price.compareTo(BigDecimal.ZERO) > 0) ? price : BigDecimal.ONE;
+
                 com.pieca.backend.domain.entities.Offer offer = com.pieca.backend.domain.entities.Offer.builder()
-                                .price(java.math.BigDecimal.ONE) // Mock price
-                                .proofImageUrl("N/A") // Mock image
+                                .price(offerPrice)
+                                .proofImageUrl("N/A")
                                 .status(com.pieca.backend.domain.enums.OfferStatus.PENDING)
                                 .request(request)
                                 .seller(seller)
                                 .build();
 
                 offerRepository.save(offer);
+
+                try {
+                        emailService.sendOfferNotification(request, seller, offerPrice);
+                } catch (Exception e) {
+                        log.warn("Failed to send email notification for request {}: {}", requestId, e.getMessage());
+                }
         }
 
         @Transactional(readOnly = true)
@@ -434,6 +497,18 @@ public class RequestService {
                 long rejected = offerRepository.countBySellerIdAndStatus(sellerId, OfferStatus.REJECTED);
                 long cancelled = offerRepository.countBySellerIdAndStatus(sellerId, OfferStatus.CANCELLED);
                 BigDecimal revenue = offerRepository.sumPriceBySellerIdAndStatus(sellerId, OfferStatus.ACCEPTED);
+                long clients = offerRepository.countDistinctBuyersBySellerIdAndStatus(sellerId, OfferStatus.ACCEPTED);
+
+                int currentYear = java.time.LocalDate.now().getYear();
+                List<Object[]> monthlyData = offerRepository.sumMonthlyRevenueBySellerIdAndStatusAndYear(sellerId, OfferStatus.ACCEPTED, currentYear);
+                java.util.List<BigDecimal> monthlyRevenue = new java.util.ArrayList<>(java.util.Collections.nCopies(12, BigDecimal.ZERO));
+                for (Object[] row : monthlyData) {
+                        int month = ((Number) row[0]).intValue();
+                        BigDecimal amount = (BigDecimal) row[1];
+                        if (month >= 1 && month <= 12) {
+                                monthlyRevenue.set(month - 1, amount);
+                        }
+                }
 
                 return SellerDashboardStatsResponse.builder()
                                 .totalOffers(total)
@@ -442,6 +517,8 @@ public class RequestService {
                                 .rejectedOffers(rejected)
                                 .cancelledOffers(cancelled)
                                 .totalRevenue(revenue != null ? revenue : BigDecimal.ZERO)
+                                .totalClients(clients)
+                                .monthlyRevenue(monthlyRevenue)
                                 .build();
         }
 
@@ -463,6 +540,169 @@ public class RequestService {
 
                 offer.setStatus(OfferStatus.CANCELLED);
                 offerRepository.save(offer);
+        }
+
+        @Transactional
+        public void buyerAcceptOffer(Long offerId, String buyerEmail) {
+                User buyer = userRepository.findByEmail(buyerEmail)
+                                .orElseThrow(() -> new ResourceNotFoundException("Acheteur introuvable"));
+
+                if (buyer.getRole() != Role.BUYER) {
+                        throw new UnauthorizedActionException("Seuls les acheteurs peuvent accepter des offres");
+                }
+
+                Offer offer = offerRepository.findById(offerId)
+                                .orElseThrow(() -> new ResourceNotFoundException("Offre introuvable"));
+
+                if (!offer.getRequest().getBuyer().getId().equals(buyer.getId())) {
+                        throw new UnauthorizedActionException("Vous n'etes pas autorise a modifier cette offre");
+                }
+
+                if (offer.getStatus() != OfferStatus.PENDING) {
+                        throw new BusinessViolationException("Seules les offres en attente peuvent etre acceptees");
+                }
+
+                offer.setStatus(OfferStatus.ACCEPTED);
+                offerRepository.save(offer);
+
+                Request request = offer.getRequest();
+                request.setStatus(RequestStatus.RESOLVED);
+                requestRepository.save(request);
+
+                try {
+                        emailService.sendOfferAcceptedNotification(offer.getRequest(), offer.getSeller(), buyer, offer.getPrice());
+                } catch (Exception e) {
+                        log.warn("Failed to send offer accepted email for offer {}: {}", offerId, e.getMessage());
+                }
+        }
+
+        @Transactional
+        public void buyerDeclineOffer(Long offerId, String buyerEmail) {
+                User buyer = userRepository.findByEmail(buyerEmail)
+                                .orElseThrow(() -> new ResourceNotFoundException("Acheteur introuvable"));
+
+                if (buyer.getRole() != Role.BUYER) {
+                        throw new UnauthorizedActionException("Seuls les acheteurs peuvent rejeter des offres");
+                }
+
+                Offer offer = offerRepository.findById(offerId)
+                                .orElseThrow(() -> new ResourceNotFoundException("Offre introuvable"));
+
+                if (!offer.getRequest().getBuyer().getId().equals(buyer.getId())) {
+                        throw new UnauthorizedActionException("Vous n'etes pas autorise a modifier cette offre");
+                }
+
+                if (offer.getStatus() != OfferStatus.PENDING) {
+                        throw new BusinessViolationException("Seules les offres en attente peuvent etre rejetees");
+                }
+
+                offer.setStatus(OfferStatus.REJECTED);
+                offerRepository.save(offer);
+
+                try {
+                        emailService.sendOfferDeclinedNotification(offer.getRequest(), offer.getSeller(), buyer);
+                } catch (Exception e) {
+                        log.warn("Failed to send offer declined email for offer {}: {}", offerId, e.getMessage());
+                }
+        }
+
+        @Transactional(readOnly = true)
+        public Page<com.pieca.backend.domain.dtos.BuyerOfferItemResponse> getBuyerOffers(
+                        String buyerEmail, OfferStatus status, String period, int page, int size) {
+                User buyer = userRepository.findByEmail(buyerEmail)
+                                .orElseThrow(() -> new ResourceNotFoundException("Acheteur introuvable"));
+                if (buyer.getRole() != Role.BUYER) {
+                        throw new UnauthorizedActionException("Seuls les acheteurs peuvent consulter leurs offres");
+                }
+
+                java.time.LocalDateTime since = null;
+                if ("24h".equals(period)) {
+                        since = java.time.LocalDateTime.now().minusHours(24);
+                } else if ("week".equals(period)) {
+                        since = java.time.LocalDateTime.now().minusWeeks(1);
+                }
+
+                Pageable pageable = PageRequest.of(Math.max(page, 0), Math.max(size, 1));
+                Page<Offer> offers;
+                if (status != null && since != null) {
+                        offers = offerRepository.findByBuyerIdAndStatusAndCreatedAtAfterOrderByCreatedAtDesc(buyer.getId(), status, since, pageable);
+                } else if (status != null) {
+                        offers = offerRepository.findByBuyerIdAndStatusOrderByCreatedAtDesc(buyer.getId(), status, pageable);
+                } else if (since != null) {
+                        offers = offerRepository.findByBuyerIdAndCreatedAtAfterOrderByCreatedAtDesc(buyer.getId(), since, pageable);
+                } else {
+                        offers = offerRepository.findByBuyerIdOrderByCreatedAtDesc(buyer.getId(), pageable);
+                }
+
+                return offers.map(this::toBuyerOfferItem);
+        }
+
+        private com.pieca.backend.domain.dtos.BuyerOfferItemResponse toBuyerOfferItem(Offer offer) {
+                Request request = offer.getRequest();
+                String title = request.getDescription();
+                String details = "";
+                if (request.getDescription() != null) {
+                        int sep = request.getDescription().indexOf(" | ");
+                        if (sep >= 0) {
+                                title = request.getDescription().substring(0, sep);
+                                details = request.getDescription().substring(sep + 3);
+                        }
+                }
+
+                User sellerUser = offer.getSeller();
+                String sellerName = ((sellerUser.getFirstName() != null ? sellerUser.getFirstName() : "") + " " +
+                                (sellerUser.getLastName() != null ? sellerUser.getLastName() : "")).trim();
+
+                String storeName = null;
+                String sellerTypeStr = null;
+                java.util.List<String> sellerCategories = new java.util.ArrayList<>();
+                Double sellerLat = null;
+                Double sellerLon = null;
+                Integer sellerRadius = null;
+                java.util.List<String> storeImages = new java.util.ArrayList<>();
+
+                SellerProfile sp = sellerProfileRepository.findByUserId(sellerUser.getId()).orElse(null);
+                if (sp != null) {
+                        storeName = sp.getCustomCategoryNote();
+                        if (sp.getSellerType() != null) sellerTypeStr = sp.getSellerType().name();
+                        if (sp.getCategories() != null) {
+                                for (Category cat : sp.getCategories()) {
+                                        sellerCategories.add(cat.getName());
+                                }
+                        }
+                        if (sp.getLocation() != null) {
+                                sellerLat = sp.getLocation().getY();
+                                sellerLon = sp.getLocation().getX();
+                        }
+                        sellerRadius = sp.getActiveRadiusKm();
+                        if (sp.getStoreImagesJson() != null && !sp.getStoreImagesJson().isBlank()) {
+                                try { storeImages = parseStoreImagesJson(sp.getStoreImagesJson()); } catch (Exception ignored) {}
+                        }
+                }
+
+                return com.pieca.backend.domain.dtos.BuyerOfferItemResponse.builder()
+                                .offerId(offer.getId())
+                                .price(offer.getPrice())
+                                .proofImageUrl(offer.getProofImageUrl())
+                                .offerStatus(offer.getStatus())
+                                .offerCreatedAt(offer.getCreatedAt())
+                                .requestId(request.getId())
+                                .requestTitle(title)
+                                .requestDescription(details)
+                                .requestCategoryName(request.getCategory() != null ? request.getCategory().getName() : null)
+                                .requestImageUrl(request.getImageUrl())
+                                .requestStatus(request.getStatus() != null ? request.getStatus().name() : null)
+                                .sellerName(sellerName)
+                                .sellerEmail(sellerUser.getEmail())
+                                .sellerPhone(sellerUser.getPhoneNumber())
+                                .storeName(storeName)
+                                .sellerType(sellerTypeStr)
+                                .sellerCategories(sellerCategories)
+                                .sellerLatitude(sellerLat)
+                                .sellerLongitude(sellerLon)
+                                .sellerActiveRadiusKm(sellerRadius)
+                                .sellerStoreImages(storeImages)
+                                .build();
         }
 
         private SellerRequestItemResponse toSellerItem(Offer offer) {
@@ -488,6 +728,8 @@ public class RequestService {
                                 .offerPrice(offer.getPrice())
                                 .buyerFirstName(request.getBuyer() != null ? request.getBuyer().getFirstName() : null)
                                 .buyerLastName(request.getBuyer() != null ? request.getBuyer().getLastName() : null)
+                                .buyerPhone(request.getBuyer() != null ? request.getBuyer().getPhoneNumber() : null)
+                                .buyerEmail(request.getBuyer() != null ? request.getBuyer().getEmail() : null)
                                 .imageUrl(request.getImageUrl())
                                 .createdAt(request.getCreatedAt())
                                 .offerCreatedAt(offer.getCreatedAt())

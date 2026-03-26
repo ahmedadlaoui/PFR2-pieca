@@ -16,7 +16,8 @@ export const routes: Routes = [
         { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
         { path: 'dashboard', loadComponent: () => import('./buyer/buyer-dashboard').then(m => m.BuyerDashboard) },
         { path: 'demand/new', loadComponent: () => import('./demand/new-demand').then(m => m.NewDemand) },
-        { path: 'demand/:id', loadComponent: () => import('./demand/demand-details').then(m => m.DemandDetails) }
+        { path: 'demand/:id', loadComponent: () => import('./demand/demand-details').then(m => m.DemandDetails) },
+        { path: 'offers', loadComponent: () => import('./buyer/buyer-offers').then(m => m.BuyerOffers) }
       ]
     },
     {
@@ -29,7 +30,8 @@ export const routes: Routes = [
         { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
         { path: 'dashboard', loadComponent: () => import('./seller/seller-dashboard').then(m => m.SellerDashboard) },
         { path: 'profile', loadComponent: () => import('./seller/seller-profile').then(m => m.SellerProfile) },
-        { path: 'pending-requests', loadComponent: () => import('./seller/seller-pending-requests').then(m => m.SellerPendingRequests) }
+        { path: 'pending-requests', loadComponent: () => import('./seller/seller-pending-requests').then(m => m.SellerPendingRequests) },
+        { path: 'statistics', loadComponent: () => import('./seller/seller-statistics').then(m => m.SellerStatistics) }
       ]
     },
     { path: 'login', loadComponent: () => import('./auth/login/login').then(m => m.Login), canActivate: [guestGuard] },

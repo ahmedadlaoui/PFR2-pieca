@@ -52,6 +52,12 @@ export interface BuyerDemandDetails {
     sellerEmail: string;
     sellerPhone: string;
     storeName: string;
+    sellerType: string;
+    sellerCategories: string[];
+    sellerLatitude: number | null;
+    sellerLongitude: number | null;
+    sellerActiveRadiusKm: number | null;
+    sellerStoreImages: string[];
   }>;
 }
 
@@ -76,6 +82,8 @@ export interface SellerRequestItem {
   offerPrice: number;
   buyerFirstName: string;
   buyerLastName: string;
+  buyerPhone: string | null;
+  buyerEmail: string | null;
   imageUrl: string | null;
   createdAt: string;
   offerCreatedAt: string;
@@ -88,6 +96,32 @@ export interface SellerDashboardStats {
   rejectedOffers: number;
   cancelledOffers: number;
   totalRevenue: number;
+  totalClients: number;
+  monthlyRevenue: number[];
+}
+
+export interface BuyerOfferItem {
+  offerId: number;
+  price: number;
+  proofImageUrl: string;
+  offerStatus: string;
+  offerCreatedAt: string;
+  requestId: number;
+  requestTitle: string;
+  requestDescription: string;
+  requestCategoryName: string;
+  requestImageUrl: string | null;
+  requestStatus: string;
+  sellerName: string;
+  sellerEmail: string;
+  sellerPhone: string | null;
+  storeName: string | null;
+  sellerType: string | null;
+  sellerCategories: string[];
+  sellerLatitude: number | null;
+  sellerLongitude: number | null;
+  sellerActiveRadiusKm: number | null;
+  sellerStoreImages: string[];
 }
 
 @Injectable({ providedIn: 'root' })
@@ -138,6 +172,41 @@ export class RequestService {
 
   cancelOffer(requestId: number): Observable<void> {
     return this.http.post<void>(`${this.API}/${requestId}/cancel`, {});
+  }
+
+  acceptDemand(requestId: number, price?: number): Observable<void> {
+    const params: Record<string, string> = {};
+    if (price != null && price > 0) {
+      params['price'] = String(price);
+    }
+    return this.http.post<void>(`${this.API}/${requestId}/accept`, {}, { params });
+  }
+
+  buyerAcceptOffer(offerId: number): Observable<void> {
+    return this.http.post<void>(`${this.API}/offers/${offerId}/buyer-accept`, {}, { withCredentials: true });
+  }
+
+  buyerDeclineOffer(offerId: number): Observable<void> {
+    return this.http.post<void>(`${this.API}/offers/${offerId}/buyer-decline`, {}, { withCredentials: true });
+  }
+
+  uploadStoreImages(files: File[]): Observable<string[]> {
+    const formData = new FormData();
+    for (const file of files) {
+      formData.append('files', file);
+    }
+    return this.http.post<string[]>('/api/v1/sellers/me/store-images', formData);
+  }
+
+  deleteStoreImage(imageUrl: string): Observable<void> {
+    return this.http.delete<void>('/api/v1/sellers/me/store-images', { params: { imageUrl } });
+  }
+
+  getBuyerOffers(offerStatus: string | null, period: string | null, page = 0, size = 10): Observable<PagedResponse<BuyerOfferItem>> {
+    const params: Record<string, string | number> = { page, size };
+    if (offerStatus) params['offerStatus'] = offerStatus;
+    if (period) params['period'] = period;
+    return this.http.get<PagedResponse<BuyerOfferItem>>(`${this.API}/buyer/offers`, { params });
   }
 }
 

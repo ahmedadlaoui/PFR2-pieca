@@ -128,10 +128,22 @@
             <p class="text-sm font-bold text-gray-900">{{ selectedRequest.buyerFirstName }} {{ selectedRequest.buyerLastName }}</p>
           </div>
           <div class="bg-gray-50 rounded-lg p-3">
+            <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-0.5">Telephone</p>
+            <p class="text-sm font-bold text-gray-900">{{ selectedRequest.buyerPhone || 'Non renseigne' }}</p>
+          </div>
+          <div class="bg-gray-50 rounded-lg p-3">
+            <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-0.5">Email</p>
+            <p class="text-sm font-bold text-gray-900 truncate">{{ selectedRequest.buyerEmail || '-' }}</p>
+          </div>
+          <div class="bg-gray-50 rounded-lg p-3">
             <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-0.5">Statut offre</p>
             <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold uppercase tracking-wider border" [ngClass]="offerStatusClasses(selectedRequest.offerStatus)">
               {{ offerStatusLabel(selectedRequest.offerStatus) }}
             </span>
+          </div>
+          <div class="bg-gray-50 rounded-lg p-3">
+            <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-0.5">Prix offre</p>
+            <p class="text-sm font-black text-[#255362]">{{ selectedRequest.offerPrice }} MAD</p>
           </div>
           <div class="bg-gray-50 rounded-lg p-3">
             <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-0.5">Date demande</p>
@@ -140,10 +152,6 @@
           <div class="bg-gray-50 rounded-lg p-3">
             <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-0.5">Date offre</p>
             <p class="text-sm font-bold text-gray-900">{{ selectedRequest.offerCreatedAt | date:'dd/MM/yyyy HH:mm' }}</p>
-          </div>
-          <div class="bg-gray-50 rounded-lg p-3">
-            <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-0.5">Demande #</p>
-            <p class="text-sm font-bold text-gray-900">{{ selectedRequest.requestId }}</p>
           </div>
         </div>
 

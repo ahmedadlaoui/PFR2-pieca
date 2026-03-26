@@ -36,5 +36,11 @@ public class BuyerRequestDetailsResponse {
         private String sellerEmail;
         private String sellerPhone;
         private String storeName;
+        private String sellerType;
+        private List<String> sellerCategories;
+        private Double sellerLatitude;
+        private Double sellerLongitude;
+        private Integer sellerActiveRadiusKm;
+        private List<String> sellerStoreImages;
     }
 }

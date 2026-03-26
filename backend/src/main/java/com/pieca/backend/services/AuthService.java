@@ -46,6 +46,7 @@ public class AuthService {
                 .email(request.getEmail())
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
+                .phoneNumber(request.getPhoneNumber())
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .role(Role.BUYER)
                 .build();
@@ -64,6 +65,7 @@ public class AuthService {
                 .email(request.getEmail())
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
+                .phoneNumber(request.getPhoneNumber())
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .role(Role.SELLER)
                 .build();

@@ -53,6 +53,7 @@ export class Register implements OnInit, AfterViewInit, OnDestroy {
       email: ['', [Validators.required, Validators.email]],
       firstName: ['', [Validators.required]],
       lastName: ['', [Validators.required]],
+      phoneNumber: [''],
       password: ['', [Validators.required, Validators.minLength(6)]],
       confirmPassword: ['', [Validators.required]]
     });
@@ -61,6 +62,7 @@ export class Register implements OnInit, AfterViewInit, OnDestroy {
       email: ['', [Validators.required, Validators.email]],
       firstName: ['', [Validators.required]],
       lastName: ['', [Validators.required]],
+      phoneNumber: [''],
       password: ['', [Validators.required, Validators.minLength(6)]],
       confirmPassword: ['', [Validators.required]],
       sellerType: ['', [Validators.required]],
@@ -250,7 +252,8 @@ export class Register implements OnInit, AfterViewInit, OnDestroy {
       email: this.buyerForm.value.email,
       firstName: this.buyerForm.value.firstName,
       lastName: this.buyerForm.value.lastName,
-      password: this.buyerForm.value.password
+      password: this.buyerForm.value.password,
+      phoneNumber: this.buyerForm.value.phoneNumber || undefined
     }).subscribe({
       next: () => {
         this.loading = false;
@@ -277,6 +280,7 @@ export class Register implements OnInit, AfterViewInit, OnDestroy {
       firstName: this.sellerForm.value.firstName,
       lastName: this.sellerForm.value.lastName,
       password: this.sellerForm.value.password,
+      phoneNumber: this.sellerForm.value.phoneNumber || undefined,
       sellerType: this.sellerForm.value.sellerType,
       categoryIds: this.sellerForm.value.categoryIds,
       customCategoryNote: this.sellerForm.value.customCategoryNote || undefined,

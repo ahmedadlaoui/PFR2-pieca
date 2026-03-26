@@ -36,4 +36,6 @@ public class RegisterSellerRequest {
     private Integer activeRadiusKm;
 
     private String customCategoryNote;
+
+    private String phoneNumber;
 }

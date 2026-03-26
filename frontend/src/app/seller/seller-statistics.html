@@ -1,0 +1,161 @@
+<div class="py-2 px-2 w-full flex flex-col gap-4">
+
+  <div class="bg-white border border-gray-100 rounded-xl p-5 md:p-6 shadow-sm">
+    <p class="text-[11px] uppercase tracking-[0.2em] font-black text-[#255362]">Statistiques</p>
+    <h1 class="text-2xl font-black text-gray-900 mt-1">Performance & Revenus</h1>
+    <p class="text-sm text-gray-500 mt-1.5 font-medium">Analysez votre activite sur PIECA en detail.</p>
+  </div>
+
+  <!-- LOADING SKELETON -->
+  <ng-container *ngIf="isLoading">
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div *ngFor="let i of [1,2,3,4,5,6]" class="bg-white border border-gray-100 rounded-xl p-5 shadow-sm animate-pulse">
+        <div class="h-3 w-16 bg-gray-200 rounded mb-3"></div>
+        <div class="h-8 w-14 bg-gray-200 rounded"></div>
+      </div>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
+      <div class="lg:col-span-2 bg-white border border-gray-100 rounded-xl p-6 shadow-sm animate-pulse h-80"></div>
+      <div class="bg-white border border-gray-100 rounded-xl p-6 shadow-sm animate-pulse h-80"></div>
+    </div>
+  </ng-container>
+
+  <!-- STATS CONTENT -->
+  <ng-container *ngIf="!isLoading && stats">
+
+    <!-- KPI CARDS -->
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div class="bg-white border border-gray-100 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+        <div class="flex items-center gap-2 mb-2">
+          <div class="w-8 h-8 rounded-lg bg-[#255362]/10 flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-[#255362]"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z"/></svg>
+          </div>
+          <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Total offres</p>
+        </div>
+        <p class="text-3xl font-black text-gray-900">{{ stats.totalOffers }}</p>
+      </div>
+
+      <div class="bg-white border border-gray-100 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+        <div class="flex items-center gap-2 mb-2">
+          <div class="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-amber-600"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+          <p class="text-[10px] font-black uppercase tracking-widest text-amber-600">En attente</p>
+        </div>
+        <p class="text-3xl font-black text-amber-700">{{ stats.pendingOffers }}</p>
+      </div>
+
+      <div class="bg-white border border-gray-100 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+        <div class="flex items-center gap-2 mb-2">
+          <div class="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-emerald-600"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+          <p class="text-[10px] font-black uppercase tracking-widest text-emerald-600">Confirmees</p>
+        </div>
+        <p class="text-3xl font-black text-emerald-700">{{ stats.acceptedOffers }}</p>
+      </div>
+
+      <div class="bg-white border border-gray-100 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+        <div class="flex items-center gap-2 mb-2">
+          <div class="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-red-500"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+          <p class="text-[10px] font-black uppercase tracking-widest text-red-500">Rejetees</p>
+        </div>
+        <p class="text-3xl font-black text-red-600">{{ stats.rejectedOffers }}</p>
+      </div>
+
+      <div class="bg-white border border-gray-100 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+        <div class="flex items-center gap-2 mb-2">
+          <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 text-blue-600"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>
+          </div>
+          <p class="text-[10px] font-black uppercase tracking-widest text-blue-600">Clients</p>
+        </div>
+        <p class="text-3xl font-black text-blue-700">{{ stats.totalClients }}</p>
+      </div>
+
+      <div class="bg-gradient-to-br from-[#255362] to-[#1d4450] rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow text-white">
+        <div class="flex items-center gap-2 mb-2">
+          <div class="w-8 h-8 rounded-lg bg-white/15 flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+          <p class="text-[10px] font-black uppercase tracking-widest text-white/70">Revenu total</p>
+        </div>
+        <p class="text-2xl font-black">{{ stats.totalRevenue | number:'1.0-0' }} <span class="text-base font-bold text-white/70">MAD</span></p>
+      </div>
+    </div>
+
+    <!-- SECONDARY KPI ROW -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      <div class="bg-white border border-gray-100 rounded-xl p-5 shadow-sm flex items-center gap-4">
+        <div class="w-12 h-12 rounded-xl bg-[#255362]/10 flex items-center justify-center shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6 text-[#255362]"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941"/></svg>
+        </div>
+        <div>
+          <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-0.5">Taux de conversion</p>
+          <p class="text-2xl font-black text-gray-900">{{ conversionRate }}%</p>
+        </div>
+      </div>
+
+      <div class="bg-white border border-gray-100 rounded-xl p-5 shadow-sm flex items-center gap-4">
+        <div class="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6 text-amber-600"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"/></svg>
+        </div>
+        <div>
+          <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-0.5">Panier moyen</p>
+          <p class="text-2xl font-black text-gray-900">{{ avgOrderValue | number:'1.0-0' }} <span class="text-sm font-bold text-gray-400">MAD</span></p>
+        </div>
+      </div>
+
+      <div class="bg-white border border-gray-100 rounded-xl p-5 shadow-sm flex items-center gap-4">
+        <div class="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6 text-gray-500"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+        </div>
+        <div>
+          <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-0.5">Annulees</p>
+          <p class="text-2xl font-black text-gray-900">{{ stats.cancelledOffers }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHARTS ROW -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
+      <div class="lg:col-span-2 bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden">
+        <div class="p-5 pb-0 border-b border-gray-100">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Revenu mensuel</p>
+              <p class="text-lg font-black text-gray-900 mt-0.5">Evolution {{ currentYear }}</p>
+            </div>
+            <div class="bg-[#255362]/10 text-[#255362] px-3 py-1.5 rounded-lg text-xs font-black">
+              {{ stats.totalRevenue | number:'1.0-0' }} MAD total
+            </div>
+          </div>
+        </div>
+        <div class="p-5" style="height: 320px;">
+          <canvas #revenueChart></canvas>
+        </div>
+      </div>
+
+      <div class="bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden">
+        <div class="p-5 pb-0 border-b border-gray-100">
+          <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Repartition</p>
+          <p class="text-lg font-black text-gray-900 mt-0.5 mb-4">Statut des offres</p>
+        </div>
+        <div class="p-5 flex items-center justify-center" style="height: 320px;">
+          <canvas #offersChart></canvas>
+        </div>
+      </div>
+    </div>
+
+  </ng-container>
+
+  <!-- EMPTY STATE -->
+  <div *ngIf="!isLoading && !stats" class="bg-white border border-gray-100 rounded-xl p-12 shadow-sm text-center">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-12 h-12 text-gray-300 mx-auto mb-4"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/></svg>
+    <p class="text-sm font-bold text-gray-500">Impossible de charger les statistiques.</p>
+    <button (click)="fetchStats()" class="mt-4 text-xs font-black uppercase tracking-widest text-[#255362] hover:underline">Reessayer</button>
+  </div>
+
+</div>

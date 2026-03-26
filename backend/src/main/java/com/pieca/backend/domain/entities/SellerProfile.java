@@ -38,6 +38,9 @@ public class SellerProfile {
 
     private String customCategoryNote;
 
+    @Column(columnDefinition = "TEXT")
+    private String storeImagesJson;
+
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime createdAt;

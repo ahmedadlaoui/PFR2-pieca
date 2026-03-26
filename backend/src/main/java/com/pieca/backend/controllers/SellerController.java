@@ -4,12 +4,13 @@ import com.pieca.backend.domain.dtos.SellerNearbyResponse;
 import com.pieca.backend.security.CustomUserDetails;
 import com.pieca.backend.services.SellerService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.Resource;
+import org.springframework.http.MediaType;
+import org.springframework.http.MediaTypeFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -38,5 +39,28 @@ public class SellerController {
     public ResponseEntity<SellerNearbyResponse> getCurrentSeller(
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         return ResponseEntity.ok(sellerService.getCurrentSellerProfile(userDetails.getUser().getId()));
+    }
+
+    @PostMapping(value = "/me/store-images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<List<String>> uploadStoreImages(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam("files") List<MultipartFile> files) {
+        List<String> urls = sellerService.uploadStoreImages(userDetails.getUser().getId(), files);
+        return ResponseEntity.ok(urls);
+    }
+
+    @DeleteMapping("/me/store-images")
+    public ResponseEntity<Void> deleteStoreImage(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam String imageUrl) {
+        sellerService.deleteStoreImage(userDetails.getUser().getId(), imageUrl);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/store-photos/{fileName:.+}")
+    public ResponseEntity<Resource> getStorePhoto(@PathVariable String fileName) {
+        Resource file = sellerService.loadStorePhoto(fileName);
+        MediaType mediaType = MediaTypeFactory.getMediaType(file).orElse(MediaType.APPLICATION_OCTET_STREAM);
+        return ResponseEntity.ok().contentType(mediaType).body(file);
     }
 }

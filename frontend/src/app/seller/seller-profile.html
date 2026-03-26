@@ -73,4 +73,40 @@
       </div>
     </form>
   </div>
+
+  <!-- Store Images Section -->
+  <div class="bg-white border border-gray-100 rounded-xl p-5 md:p-6 shadow-sm">
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <p class="text-[11px] uppercase tracking-[0.2em] font-black text-[#255362]">Photos du magasin</p>
+        <p class="text-sm text-gray-500 mt-1 font-medium">Ajoutez jusqu'a 6 photos de votre magasin ou atelier (optionnel).</p>
+      </div>
+    </div>
+
+    <div *ngIf="storeImagesError" class="mb-3 rounded border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700">
+      {{ storeImagesError }}
+    </div>
+
+    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
+      <div *ngFor="let img of storeImages" class="relative group rounded-xl overflow-hidden border border-gray-200 bg-gray-50 h-36">
+        <img [src]="img" alt="Photo magasin" class="w-full h-full object-cover" />
+        <button type="button" (click)="removeStoreImage(img)" class="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg cursor-pointer">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <label *ngIf="storeImages.length < 6" class="flex flex-col items-center justify-center h-36 rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 hover:border-[#255362]/40 hover:bg-[#f3f8fa] transition-colors cursor-pointer">
+        <svg class="w-8 h-8 text-gray-300 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        <span class="text-[10px] uppercase tracking-widest font-black text-gray-400">Ajouter</span>
+        <input type="file" accept="image/*" multiple class="hidden" (change)="onStoreImagesSelected($event)" />
+      </label>
+    </div>
+
+    <div *ngIf="storeImagesUploading" class="flex items-center gap-2 text-sm font-semibold text-[#255362]">
+      <div class="w-4 h-4 border-2 border-[#255362]/20 border-t-[#255362] rounded-full animate-spin"></div>
+      Upload en cours...
+    </div>
+
+    <p class="text-xs text-gray-400 font-medium">Images acceptees: JPG, PNG, WebP. Max 5 MB par image.</p>
+  </div>
 </div>

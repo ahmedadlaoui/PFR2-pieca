@@ -1,0 +1,306 @@
+<div class="py-2 px-2 w-full flex-grow">
+  <div class="max-w-7xl w-full mx-auto space-y-2">
+
+    <!-- Header -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sm:p-8">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <p class="text-[11px] uppercase tracking-[0.2em] font-black text-[#255362]">Espace acheteur</p>
+          <h1 class="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight mt-1">Mes offres</h1>
+          <p class="text-sm text-gray-500 font-medium mt-1">Consultez et gerez les offres recues sur vos demandes.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="bg-[#f3f8fa] px-4 py-2.5 rounded-xl text-center">
+            <p class="text-xl font-black text-[#255362]">{{ totalElements }}</p>
+            <p class="text-[10px] uppercase tracking-widest font-bold text-gray-400">Offre(s)</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-5">
+      <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+        <!-- Period filter -->
+        <div class="flex items-center gap-1.5">
+          <span class="text-[10px] uppercase tracking-widest font-black text-gray-400 mr-1">Periode :</span>
+          <button *ngFor="let p of periodFilters" (click)="onPeriodFilter(p.value)"
+            class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer"
+            [class.bg-[#255362]]="selectedPeriod === p.value"
+            [class.text-white]="selectedPeriod === p.value"
+            [class.bg-gray-100]="selectedPeriod !== p.value"
+            [class.text-gray-600]="selectedPeriod !== p.value"
+            [class.hover:bg-gray-200]="selectedPeriod !== p.value">
+            {{ p.label }}
+          </button>
+        </div>
+
+        <div class="hidden sm:block w-px h-6 bg-gray-200"></div>
+
+        <!-- Status filter -->
+        <div class="flex items-center gap-1.5">
+          <span class="text-[10px] uppercase tracking-widest font-black text-gray-400 mr-1">Statut :</span>
+          <button *ngFor="let s of statusFilters" (click)="onStatusFilter(s.value)"
+            class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer"
+            [class.bg-[#255362]]="selectedStatus === s.value"
+            [class.text-white]="selectedStatus === s.value"
+            [class.bg-gray-100]="selectedStatus !== s.value"
+            [class.text-gray-600]="selectedStatus !== s.value"
+            [class.hover:bg-gray-200]="selectedStatus !== s.value">
+            {{ s.label }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div *ngIf="loading" class="bg-white p-12 rounded-2xl shadow-sm border border-gray-100 text-center">
+      <div class="w-10 h-10 border-4 border-[#255362]/20 border-t-[#255362] rounded-full animate-spin mx-auto mb-3"></div>
+      <p class="text-sm font-bold text-gray-500 uppercase tracking-widest">Chargement...</p>
+    </div>
+
+    <!-- Error -->
+    <div *ngIf="errorMessage && !loading" class="bg-red-50 border border-red-200 rounded-2xl p-8 text-center">
+      <p class="text-sm font-bold text-red-700">{{ errorMessage }}</p>
+    </div>
+
+    <!-- Empty state -->
+    <div *ngIf="!loading && !errorMessage && offers.length === 0" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center">
+      <svg class="w-16 h-16 text-gray-200 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+      <p class="text-sm font-bold text-gray-500">Aucune offre trouvee.</p>
+      <p class="text-xs text-gray-400 mt-1">Modifiez vos filtres ou attendez que des vendeurs repondent a vos demandes.</p>
+    </div>
+
+    <!-- Offer List -->
+    <div *ngIf="!loading && offers.length > 0" class="space-y-2">
+      <div *ngFor="let offer of offers"
+        class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 hover:border-[#255362]/30 transition-all cursor-pointer group"
+        (click)="openDetail(offer)">
+
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <!-- Left: Seller info -->
+          <div class="flex items-center gap-4 flex-1 min-w-0">
+            <div class="w-12 h-12 bg-[#f3f8fa] rounded-full flex items-center justify-center border border-gray-200 shrink-0">
+              <span class="text-sm font-black text-[#255362]">{{ offer.sellerName | slice:0:1 | uppercase }}</span>
+            </div>
+            <div class="min-w-0">
+              <div class="flex items-center gap-2 flex-wrap">
+                <h3 class="text-sm font-black text-gray-900 truncate">{{ offer.storeName || offer.sellerName }}</h3>
+                <span *ngIf="offer.sellerType" class="text-[10px] uppercase tracking-wider font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded shrink-0">{{ sellerTypeLabel(offer.sellerType) }}</span>
+              </div>
+              <p class="text-xs text-gray-500 font-medium mt-0.5 truncate">
+                <span class="text-[#255362] font-bold">{{ offer.requestTitle }}</span>
+                <span class="mx-1.5 text-gray-300">|</span>
+                {{ offer.requestCategoryName }}
+              </p>
+              <div class="flex items-center gap-3 mt-1 text-xs text-gray-400">
+                <span>{{ offer.sellerEmail }}</span>
+                <span *ngIf="offer.sellerPhone">{{ offer.sellerPhone }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Price, status, actions -->
+          <div class="flex items-center gap-4 shrink-0">
+            <div class="text-right">
+              <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Prix</p>
+              <p class="text-lg font-black text-[#255362]">{{ offer.price }} MAD</p>
+            </div>
+
+            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider"
+              [class]="offerStatusClasses(offer.offerStatus)">
+              {{ offerStatusLabel(offer.offerStatus) }}
+            </span>
+
+            <!-- Accept/Decline for PENDING -->
+            <div *ngIf="offer.offerStatus === 'PENDING'" class="flex items-center gap-1.5" (click)="$event.stopPropagation()">
+              <button (click)="acceptOffer(offer.offerId, $event)" [disabled]="actionLoading[offer.offerId]"
+                class="px-3 py-2 bg-emerald-600 text-white text-[10px] font-black uppercase rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50 cursor-pointer">
+                Accepter
+              </button>
+              <button (click)="declineOffer(offer.offerId, $event)" [disabled]="actionLoading[offer.offerId]"
+                class="px-3 py-2 bg-red-500 text-white text-[10px] font-black uppercase rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50 cursor-pointer">
+                Refuser
+              </button>
+            </div>
+
+            <svg class="w-4 h-4 text-gray-300 group-hover:text-[#255362] transition-colors shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          </div>
+        </div>
+
+        <!-- Info row -->
+        <div class="mt-3 pt-3 border-t border-gray-50 flex flex-wrap items-center gap-4 text-xs text-gray-400">
+          <span class="flex items-center gap-1">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            {{ offer.offerCreatedAt | date:'dd MMM yyyy HH:mm' }}
+          </span>
+          <span *ngIf="offer.sellerCategories?.length" class="flex items-center gap-1">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
+            {{ offer.sellerCategories.join(', ') }}
+          </span>
+          <span *ngIf="offer.sellerStoreImages?.length" class="flex items-center gap-1 text-[#255362] font-bold">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+            {{ offer.sellerStoreImages.length }} photo(s)
+          </span>
+          <a [routerLink]="'/buyer/demand/' + offer.requestId" class="ml-auto text-[#255362] font-bold hover:underline" (click)="$event.stopPropagation()">
+            Voir la demande &rarr;
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div *ngIf="!loading && totalPages > 1" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 flex items-center justify-between">
+      <p class="text-xs font-semibold text-gray-400">
+        Page {{ currentPage + 1 }} sur {{ totalPages }} ({{ totalElements }} resultats)
+      </p>
+      <div class="flex items-center gap-1">
+        <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 0"
+          class="px-3 py-1.5 rounded-lg text-xs font-bold bg-gray-100 text-gray-600 hover:bg-gray-200 disabled:opacity-40 transition-colors cursor-pointer">
+          <svg class="w-3.5 h-3.5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        </button>
+        <button *ngFor="let p of pageNumbers" (click)="goToPage(p)"
+          class="px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer"
+          [class.bg-[#255362]]="p === currentPage"
+          [class.text-white]="p === currentPage"
+          [class.bg-gray-100]="p !== currentPage"
+          [class.text-gray-600]="p !== currentPage"
+          [class.hover:bg-gray-200]="p !== currentPage">
+          {{ p + 1 }}
+        </button>
+        <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage >= totalPages - 1"
+          class="px-3 py-1.5 rounded-lg text-xs font-bold bg-gray-100 text-gray-600 hover:bg-gray-200 disabled:opacity-40 transition-colors cursor-pointer">
+          <svg class="w-3.5 h-3.5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- OFFER DETAIL MODAL -->
+<div *ngIf="selectedOffer" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" (click)="closeDetail()"></div>
+  <div class="relative bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto z-10">
+    <!-- Header -->
+    <div class="sticky top-0 bg-white border-b border-gray-100 p-5 flex items-center justify-between rounded-t-2xl z-10">
+      <div>
+        <p class="text-[10px] uppercase tracking-widest font-black text-[#255362]">Detail de l'offre</p>
+        <h3 class="text-lg font-black text-gray-900 mt-0.5">{{ selectedOffer.storeName || selectedOffer.sellerName }}</h3>
+      </div>
+      <button (click)="closeDetail()" class="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer">
+        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <div class="p-5 space-y-5">
+      <!-- Request context -->
+      <div class="bg-[#f3f8fa] rounded-xl p-4 border border-[#255362]/10">
+        <p class="text-[10px] uppercase tracking-widest font-black text-[#255362] mb-1">Demande concernee</p>
+        <p class="text-sm font-bold text-gray-900">{{ selectedOffer.requestTitle }}</p>
+        <p *ngIf="selectedOffer.requestDescription" class="text-xs text-gray-500 mt-1">{{ selectedOffer.requestDescription }}</p>
+        <div class="flex items-center gap-3 mt-2">
+          <span class="text-[10px] uppercase tracking-wider font-bold text-gray-500 bg-white px-2 py-0.5 rounded">{{ selectedOffer.requestCategoryName }}</span>
+          <a [routerLink]="'/buyer/demand/' + selectedOffer.requestId" class="text-[10px] uppercase tracking-wider font-bold text-[#255362] hover:underline" (click)="closeDetail()">Voir la demande</a>
+        </div>
+      </div>
+
+      <!-- Store Images Gallery -->
+      <div *ngIf="selectedOffer.sellerStoreImages?.length">
+        <p class="text-[10px] uppercase tracking-widest font-black text-gray-400 mb-2">Photos du magasin</p>
+        <div class="relative rounded-xl overflow-hidden bg-gray-100 h-56">
+          <img [src]="selectedOffer.sellerStoreImages[selectedImageIndex]" alt="Photo magasin" class="w-full h-full object-cover" />
+          <div *ngIf="selectedOffer.sellerStoreImages.length > 1" class="absolute inset-x-0 bottom-0 flex items-center justify-between p-3">
+            <button (click)="prevImage(); $event.stopPropagation()" [disabled]="selectedImageIndex === 0" class="p-1.5 bg-white/90 rounded-full shadow-md disabled:opacity-30 cursor-pointer">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+            </button>
+            <span class="bg-black/50 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">{{ selectedImageIndex + 1 }} / {{ selectedOffer.sellerStoreImages.length }}</span>
+            <button (click)="nextImage(); $event.stopPropagation()" [disabled]="selectedImageIndex >= selectedOffer.sellerStoreImages.length - 1" class="p-1.5 bg-white/90 rounded-full shadow-md disabled:opacity-30 cursor-pointer">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Seller Info Grid -->
+      <div class="grid grid-cols-2 gap-3">
+        <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
+          <p class="text-[10px] uppercase tracking-widest font-black text-gray-400 mb-1">Type de vendeur</p>
+          <p class="text-sm font-bold text-gray-900">{{ sellerTypeLabel(selectedOffer.sellerType) }}</p>
+        </div>
+        <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
+          <p class="text-[10px] uppercase tracking-widest font-black text-gray-400 mb-1">Prix propose</p>
+          <p class="text-sm font-black text-[#255362]">{{ selectedOffer.price }} MAD</p>
+        </div>
+        <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
+          <p class="text-[10px] uppercase tracking-widest font-black text-gray-400 mb-1">Email</p>
+          <a [href]="'mailto:' + selectedOffer.sellerEmail" class="text-sm font-bold text-[#255362] hover:underline break-all">{{ selectedOffer.sellerEmail }}</a>
+        </div>
+        <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
+          <p class="text-[10px] uppercase tracking-widest font-black text-gray-400 mb-1">Telephone</p>
+          <a *ngIf="selectedOffer.sellerPhone" [href]="'tel:' + selectedOffer.sellerPhone" class="text-sm font-bold text-[#255362] hover:underline">{{ selectedOffer.sellerPhone }}</a>
+          <p *ngIf="!selectedOffer.sellerPhone" class="text-sm font-medium text-gray-400">Non renseigne</p>
+        </div>
+        <div class="bg-gray-50 rounded-xl p-4 border border-gray-100 col-span-2" *ngIf="selectedOffer.sellerCategories?.length">
+          <p class="text-[10px] uppercase tracking-widest font-black text-gray-400 mb-1">Categories</p>
+          <div class="flex flex-wrap gap-1.5 mt-1">
+            <span *ngFor="let cat of selectedOffer.sellerCategories" class="px-2 py-0.5 bg-[#f3f8fa] text-[#255362] text-xs font-bold rounded">{{ cat }}</span>
+          </div>
+        </div>
+        <div class="bg-gray-50 rounded-xl p-4 border border-gray-100" *ngIf="selectedOffer.sellerLatitude">
+          <p class="text-[10px] uppercase tracking-widest font-black text-gray-400 mb-1">Position</p>
+          <p class="text-sm font-bold text-gray-900">{{ selectedOffer.sellerLatitude?.toFixed(4) }}, {{ selectedOffer.sellerLongitude?.toFixed(4) }}</p>
+        </div>
+        <div class="bg-gray-50 rounded-xl p-4 border border-gray-100" *ngIf="selectedOffer.sellerActiveRadiusKm">
+          <p class="text-[10px] uppercase tracking-widest font-black text-gray-400 mb-1">Rayon de service</p>
+          <p class="text-sm font-bold text-gray-900">{{ selectedOffer.sellerActiveRadiusKm }} km</p>
+        </div>
+      </div>
+
+      <!-- Map -->
+      <div *ngIf="sellerMapUrl" class="rounded-xl overflow-hidden border border-gray-200 h-44">
+        <iframe class="w-full h-full" [src]="sellerMapUrl" loading="lazy" title="Position du vendeur"></iframe>
+      </div>
+
+      <!-- Proof image -->
+      <div *ngIf="selectedOffer.proofImageUrl">
+        <p class="text-[10px] uppercase tracking-widest font-black text-gray-400 mb-2">Devis / Justificatif</p>
+        <a [href]="selectedOffer.proofImageUrl" target="_blank" class="block rounded-xl overflow-hidden border border-gray-200 bg-gray-50 hover:opacity-90 transition-opacity">
+          <img [src]="selectedOffer.proofImageUrl" alt="Devis" class="w-full max-h-48 object-contain" />
+        </a>
+      </div>
+
+      <!-- Offer status -->
+      <div class="flex items-center justify-between bg-gray-50 rounded-xl p-4 border border-gray-100">
+        <div>
+          <p class="text-[10px] uppercase tracking-widest font-black text-gray-400 mb-1">Statut de l'offre</p>
+          <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold" [class]="offerStatusClasses(selectedOffer.offerStatus)">{{ offerStatusLabel(selectedOffer.offerStatus) }}</span>
+        </div>
+        <p class="text-xs text-gray-400 font-medium">{{ selectedOffer.offerCreatedAt | date:'dd MMM yyyy HH:mm' }}</p>
+      </div>
+
+      <!-- Action buttons for PENDING -->
+      <div *ngIf="selectedOffer.offerStatus === 'PENDING'" class="flex items-center gap-3">
+        <button (click)="acceptOffer(selectedOffer.offerId)" [disabled]="actionLoading[selectedOffer.offerId]"
+          class="flex-1 py-3 bg-emerald-600 text-white font-black text-sm uppercase tracking-wider rounded-xl hover:bg-emerald-700 transition-colors disabled:opacity-50 cursor-pointer">
+          <span *ngIf="!actionLoading[selectedOffer.offerId]">Accepter cette offre</span>
+          <span *ngIf="actionLoading[selectedOffer.offerId]">Traitement...</span>
+        </button>
+        <button (click)="declineOffer(selectedOffer.offerId)" [disabled]="actionLoading[selectedOffer.offerId]"
+          class="flex-1 py-3 bg-red-500 text-white font-black text-sm uppercase tracking-wider rounded-xl hover:bg-red-600 transition-colors disabled:opacity-50 cursor-pointer">
+          <span *ngIf="!actionLoading[selectedOffer.offerId]">Refuser cette offre</span>
+          <span *ngIf="actionLoading[selectedOffer.offerId]">Traitement...</span>
+        </button>
+      </div>
+
+      <div *ngIf="selectedOffer.offerStatus === 'ACCEPTED'" class="text-center py-4 bg-emerald-50 border border-emerald-200 rounded-xl">
+        <p class="text-sm font-black text-emerald-700">Vous avez accepte cette offre</p>
+        <p class="text-xs text-emerald-600 mt-1">Contactez le vendeur pour finaliser la transaction.</p>
+      </div>
+
+      <div *ngIf="selectedOffer.offerStatus === 'REJECTED'" class="text-center py-4 bg-red-50 border border-red-200 rounded-xl">
+        <p class="text-sm font-black text-red-700">Vous avez refuse cette offre</p>
+      </div>
+    </div>
+  </div>
+</div>
