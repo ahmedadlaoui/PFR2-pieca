@@ -15,6 +15,7 @@ export const routes: Routes = [
       children: [
         { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
         { path: 'dashboard', loadComponent: () => import('./buyer/buyer-dashboard').then(m => m.BuyerDashboard) },
+        { path: 'profile', loadComponent: () => import('./buyer/buyer-profile').then(m => m.BuyerProfile) },
         { path: 'demand/new', loadComponent: () => import('./demand/new-demand').then(m => m.NewDemand) },
         { path: 'demand/:id', loadComponent: () => import('./demand/demand-details').then(m => m.DemandDetails) },
         { path: 'offers', loadComponent: () => import('./buyer/buyer-offers').then(m => m.BuyerOffers) }
