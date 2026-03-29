@@ -17,7 +17,8 @@ pipeline {
         stage('Backend — Build & Test') {
             steps {
                 dir("${BACKEND_DIR}") {
-                    sh 'mvn clean verify -q'
+                    sh 'chmod +x ./mvnw'
+                    sh './mvnw clean verify -q'
                 }
             }
             post {
@@ -46,7 +47,7 @@ pipeline {
 
         stage('Docker — Build Images') {
             when {
-                branch 'main'
+                branch 'master'
             }
             steps {
                 sh 'docker compose -f docker-compose.dev.yml build'
