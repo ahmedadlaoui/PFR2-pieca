@@ -2,8 +2,8 @@ import { AfterViewInit, Component, OnDestroy, OnInit, inject } from '@angular/co
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { RequestService } from '../core/services/request.service';
-import { AuthService, CurrentUser } from '../core/services/auth.service';
+import { RequestService } from '../../core/services/request.service';
+import { AuthService, CurrentUser } from '../../core/services/auth.service';
 import { Subscription } from 'rxjs';
 
 declare const L: any;

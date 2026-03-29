@@ -8,31 +8,31 @@ export const routes: Routes = [
     { path: '', component: LandingPageComponent },
     { 
       path: 'buyer', 
-      loadComponent: () => import('./buyer/buyer-layout').then(m => m.BuyerLayout),
+      loadComponent: () => import('./buyer/buyer-layout/buyer-layout').then(m => m.BuyerLayout),
       canActivate: [roleGuard], 
       canActivateChild: [roleGuard],
       data: { roles: ['BUYER'] },
       children: [
         { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-        { path: 'dashboard', loadComponent: () => import('./buyer/buyer-dashboard').then(m => m.BuyerDashboard) },
-        { path: 'profile', loadComponent: () => import('./buyer/buyer-profile').then(m => m.BuyerProfile) },
-        { path: 'demand/new', loadComponent: () => import('./demand/new-demand').then(m => m.NewDemand) },
-        { path: 'demand/:id', loadComponent: () => import('./demand/demand-details').then(m => m.DemandDetails) },
-        { path: 'offers', loadComponent: () => import('./buyer/buyer-offers').then(m => m.BuyerOffers) }
+        { path: 'dashboard', loadComponent: () => import('./buyer/buyer-dashboard/buyer-dashboard').then(m => m.BuyerDashboard) },
+        { path: 'profile', loadComponent: () => import('./buyer/buyer-profile/buyer-profile').then(m => m.BuyerProfile) },
+        { path: 'demand/new', loadComponent: () => import('./demand/new-demand/new-demand').then(m => m.NewDemand) },
+        { path: 'demand/:id', loadComponent: () => import('./demand/demand-details/demand-details').then(m => m.DemandDetails) },
+        { path: 'offers', loadComponent: () => import('./buyer/buyer-offers/buyer-offers').then(m => m.BuyerOffers) }
       ]
     },
     {
       path: 'seller',
-      loadComponent: () => import('./seller/seller-layout').then(m => m.SellerLayout),
+      loadComponent: () => import('./seller/seller-layout/seller-layout').then(m => m.SellerLayout),
       canActivate: [roleGuard],
       canActivateChild: [roleGuard],
       data: { roles: ['SELLER'] },
       children: [
         { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-        { path: 'dashboard', loadComponent: () => import('./seller/seller-dashboard').then(m => m.SellerDashboard) },
-        { path: 'profile', loadComponent: () => import('./seller/seller-profile').then(m => m.SellerProfile) },
-        { path: 'pending-requests', loadComponent: () => import('./seller/seller-pending-requests').then(m => m.SellerPendingRequests) },
-        { path: 'statistics', loadComponent: () => import('./seller/seller-statistics').then(m => m.SellerStatistics) }
+        { path: 'dashboard', loadComponent: () => import('./seller/seller-dashboard/seller-dashboard').then(m => m.SellerDashboard) },
+        { path: 'profile', loadComponent: () => import('./seller/seller-profile/seller-profile').then(m => m.SellerProfile) },
+        { path: 'pending-requests', loadComponent: () => import('./seller/seller-pending-requests/seller-pending-requests').then(m => m.SellerPendingRequests) },
+        { path: 'statistics', loadComponent: () => import('./seller/seller-statistics/seller-statistics').then(m => m.SellerStatistics) }
       ]
     },
     { path: 'login', loadComponent: () => import('./auth/login/login').then(m => m.Login), canActivate: [guestGuard] },

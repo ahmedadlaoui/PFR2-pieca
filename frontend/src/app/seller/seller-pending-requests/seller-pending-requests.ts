@@ -1,7 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RequestService, SellerRequestItem, PagedResponse } from '../core/services/request.service';
+import { RequestService, SellerRequestItem, PagedResponse } from '../../core/services/request.service';
 
 @Component({
   selector: 'app-seller-pending-requests',

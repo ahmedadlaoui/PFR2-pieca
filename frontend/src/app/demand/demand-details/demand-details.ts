@@ -2,7 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { RequestService, BuyerDemandDetails } from '../core/services/request.service';
+import { RequestService, BuyerDemandDetails } from '../../core/services/request.service';
 
 @Component({
   selector: 'app-demand-details',

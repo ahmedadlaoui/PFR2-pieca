@@ -2,8 +2,8 @@ import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
-import { AuthService, CurrentUser } from '../core/services/auth.service';
-import { RequestService } from '../core/services/request.service';
+import { AuthService, CurrentUser } from '../../core/services/auth.service';
+import { RequestService } from '../../core/services/request.service';
 
 type SellerProfileData = {
   firstName: string;

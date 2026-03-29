@@ -1,3 +1,12 @@
+<ng-container *ngIf="{
+  offers: offers$ | async,
+  loading: loading$ | async,
+  error: error$ | async,
+  totalPages: totalPages$ | async,
+  totalElements: totalElements$ | async,
+  currentPage: currentPage$ | async
+} as vm">
+
 <div class="py-2 px-2 w-full flex-grow">
   <div class="max-w-7xl w-full mx-auto space-y-2">
 
@@ -11,7 +20,7 @@
         </div>
         <div class="flex items-center gap-2">
           <div class="bg-[#f3f8fa] px-4 py-2.5 rounded-xl text-center">
-            <p class="text-xl font-black text-[#255362]">{{ totalElements }}</p>
+            <p class="text-xl font-black text-[#255362]">{{ vm.totalElements }}</p>
             <p class="text-[10px] uppercase tracking-widest font-bold text-gray-400">Offre(s)</p>
           </div>
         </div>
@@ -54,26 +63,26 @@
     </div>
 
     <!-- Loading -->
-    <div *ngIf="loading" class="bg-white p-12 rounded-2xl shadow-sm border border-gray-100 text-center">
+    <div *ngIf="vm.loading" class="bg-white p-12 rounded-2xl shadow-sm border border-gray-100 text-center">
       <div class="w-10 h-10 border-4 border-[#255362]/20 border-t-[#255362] rounded-full animate-spin mx-auto mb-3"></div>
       <p class="text-sm font-bold text-gray-500 uppercase tracking-widest">Chargement...</p>
     </div>
 
     <!-- Error -->
-    <div *ngIf="errorMessage && !loading" class="bg-red-50 border border-red-200 rounded-2xl p-8 text-center">
-      <p class="text-sm font-bold text-red-700">{{ errorMessage }}</p>
+    <div *ngIf="vm.error && !vm.loading" class="bg-red-50 border border-red-200 rounded-2xl p-8 text-center">
+      <p class="text-sm font-bold text-red-700">{{ vm.error }}</p>
     </div>
 
     <!-- Empty state -->
-    <div *ngIf="!loading && !errorMessage && offers.length === 0" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center">
+    <div *ngIf="!vm.loading && !vm.error && vm.offers?.length === 0" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center">
       <svg class="w-16 h-16 text-gray-200 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
       <p class="text-sm font-bold text-gray-500">Aucune offre trouvee.</p>
       <p class="text-xs text-gray-400 mt-1">Modifiez vos filtres ou attendez que des vendeurs repondent a vos demandes.</p>
     </div>
 
     <!-- Offer List -->
-    <div *ngIf="!loading && offers.length > 0" class="space-y-2">
-      <div *ngFor="let offer of offers"
+    <div *ngIf="!vm.loading && vm.offers?.length" class="space-y-2">
+      <div *ngFor="let offer of vm.offers"
         class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 hover:border-[#255362]/30 transition-all cursor-pointer group"
         (click)="openDetail(offer)">
 
@@ -114,11 +123,11 @@
 
             <!-- Accept/Decline for PENDING -->
             <div *ngIf="offer.offerStatus === 'PENDING'" class="flex items-center gap-1.5" (click)="$event.stopPropagation()">
-              <button (click)="acceptOffer(offer.offerId, $event)" [disabled]="actionLoading[offer.offerId]"
+              <button (click)="acceptOffer(offer.offerId, $event)"
                 class="px-3 py-2 bg-emerald-600 text-white text-[10px] font-black uppercase rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50 cursor-pointer">
                 Accepter
               </button>
-              <button (click)="declineOffer(offer.offerId, $event)" [disabled]="actionLoading[offer.offerId]"
+              <button (click)="declineOffer(offer.offerId, $event)"
                 class="px-3 py-2 bg-red-500 text-white text-[10px] font-black uppercase rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50 cursor-pointer">
                 Refuser
               </button>
@@ -150,25 +159,25 @@
     </div>
 
     <!-- Pagination -->
-    <div *ngIf="!loading && totalPages > 1" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 flex items-center justify-between">
+    <div *ngIf="!vm.loading && vm.totalPages! > 1" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 flex items-center justify-between">
       <p class="text-xs font-semibold text-gray-400">
-        Page {{ currentPage + 1 }} sur {{ totalPages }} ({{ totalElements }} resultats)
+        Page {{ vm.currentPage! + 1 }} sur {{ vm.totalPages }} ({{ vm.totalElements }} resultats)
       </p>
       <div class="flex items-center gap-1">
-        <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 0"
+        <button (click)="goToPage(currentPageSnapshot - 1)" [disabled]="vm.currentPage === 0"
           class="px-3 py-1.5 rounded-lg text-xs font-bold bg-gray-100 text-gray-600 hover:bg-gray-200 disabled:opacity-40 transition-colors cursor-pointer">
           <svg class="w-3.5 h-3.5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
         </button>
         <button *ngFor="let p of pageNumbers" (click)="goToPage(p)"
           class="px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer"
-          [class.bg-[#255362]]="p === currentPage"
-          [class.text-white]="p === currentPage"
-          [class.bg-gray-100]="p !== currentPage"
-          [class.text-gray-600]="p !== currentPage"
-          [class.hover:bg-gray-200]="p !== currentPage">
+          [class.bg-[#255362]]="p === currentPageSnapshot"
+          [class.text-white]="p === currentPageSnapshot"
+          [class.bg-gray-100]="p !== currentPageSnapshot"
+          [class.text-gray-600]="p !== currentPageSnapshot"
+          [class.hover:bg-gray-200]="p !== currentPageSnapshot">
           {{ p + 1 }}
         </button>
-        <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage >= totalPages - 1"
+        <button (click)="goToPage(currentPageSnapshot + 1)" [disabled]="vm.currentPage! >= vm.totalPages! - 1"
           class="px-3 py-1.5 rounded-lg text-xs font-bold bg-gray-100 text-gray-600 hover:bg-gray-200 disabled:opacity-40 transition-colors cursor-pointer">
           <svg class="w-3.5 h-3.5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
         </button>
@@ -177,6 +186,8 @@
 
   </div>
 </div>
+
+</ng-container>
 
 <!-- OFFER DETAIL MODAL -->
 <div *ngIf="selectedOffer" class="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -281,15 +292,13 @@
 
       <!-- Action buttons for PENDING -->
       <div *ngIf="selectedOffer.offerStatus === 'PENDING'" class="flex items-center gap-3">
-        <button (click)="acceptOffer(selectedOffer.offerId)" [disabled]="actionLoading[selectedOffer.offerId]"
-          class="flex-1 py-3 bg-emerald-600 text-white font-black text-sm uppercase tracking-wider rounded-xl hover:bg-emerald-700 transition-colors disabled:opacity-50 cursor-pointer">
-          <span *ngIf="!actionLoading[selectedOffer.offerId]">Accepter cette offre</span>
-          <span *ngIf="actionLoading[selectedOffer.offerId]">Traitement...</span>
+        <button (click)="acceptOffer(selectedOffer.offerId)"
+          class="flex-1 py-3 bg-emerald-600 text-white font-black text-sm uppercase tracking-wider rounded-xl hover:bg-emerald-700 transition-colors cursor-pointer">
+          Accepter cette offre
         </button>
-        <button (click)="declineOffer(selectedOffer.offerId)" [disabled]="actionLoading[selectedOffer.offerId]"
-          class="flex-1 py-3 bg-red-500 text-white font-black text-sm uppercase tracking-wider rounded-xl hover:bg-red-600 transition-colors disabled:opacity-50 cursor-pointer">
-          <span *ngIf="!actionLoading[selectedOffer.offerId]">Refuser cette offre</span>
-          <span *ngIf="actionLoading[selectedOffer.offerId]">Traitement...</span>
+        <button (click)="declineOffer(selectedOffer.offerId)"
+          class="flex-1 py-3 bg-red-500 text-white font-black text-sm uppercase tracking-wider rounded-xl hover:bg-red-600 transition-colors cursor-pointer">
+          Refuser cette offre
         </button>
       </div>
 

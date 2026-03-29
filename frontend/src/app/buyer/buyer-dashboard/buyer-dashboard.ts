@@ -1,7 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { RequestService, BuyerDemandItem } from '../core/services/request.service';
+import { RequestService, BuyerDemandItem } from '../../core/services/request.service';
 
 @Component({
   selector: 'app-buyer-dashboard',

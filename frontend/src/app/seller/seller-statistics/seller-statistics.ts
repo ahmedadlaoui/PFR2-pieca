@@ -1,6 +1,6 @@
 import { Component, OnInit, AfterViewInit, OnDestroy, ElementRef, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RequestService, SellerDashboardStats } from '../core/services/request.service';
+import { RequestService, SellerDashboardStats } from '../../core/services/request.service';
 // @ts-ignore
 import { Chart, registerables } from 'chart.js';
 
